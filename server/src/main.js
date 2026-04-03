@@ -1,6 +1,7 @@
 import express from "express";
 import Logger from "logpleaser";
 import path from "path";
+import db from './utils/db.js';
 
 const app = express();
 const logger_main = Logger.create("main");
