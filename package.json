@@ -1,5 +1,10 @@
 {
   "dependencies": {
-    "expressjs": "^1.0.1"
+    "express": "^5.2.1",
+    "logpleaser": "^1.0.4",
+    "winston": "^3.19.0"
+  },
+  "scripts": {
+    "dev": "bun run ./server/src/main.js"
   }
 }
