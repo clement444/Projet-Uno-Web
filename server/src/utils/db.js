@@ -1,8 +1,8 @@
-const Database = require('better-sqlite3');
+import { Database } from 'bun:sqlite';
 
-const db = new Database('./database.db');
+const db = new Database(new URL('./database.db', import.meta.url).pathname);
 
-db.exec(`
+db.run(`
   CREATE TABLE IF NOT EXISTS users (
     id       INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT    UNIQUE NOT NULL,
@@ -10,4 +10,4 @@ db.exec(`
   )
 `);
 
-module.exports = db;
+export default db;
