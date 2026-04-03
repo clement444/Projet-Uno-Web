@@ -1,0 +1,78 @@
+[
+  {
+    "id": 0,
+    "name": "0"
+  },
+  {
+    "id": 1,
+    "name": "1"
+  },
+  {
+    "id": 2,
+    "name": "2"
+  },
+  {
+    "id": 3,
+    "name": "3"
+  },
+  {
+    "id": 4,
+    "name": "4"
+  },
+  {
+    "id": 5,
+    "name": "5"
+  },
+  {
+    "id": 6,
+    "name": "6"
+  },
+  {
+    "id": 7,
+    "name": "7"
+  },
+  {
+    "id": 8,
+    "name": "8"
+  },
+  {
+    "id": 9,
+    "name": "9"
+  },
+  {
+    "id": 10,
+    "name": "+2"
+  },
+  {
+    "id": 11,
+    "name": "+4"
+  },
+  {
+    "id": 12,
+    "name": "Change colors"
+  },
+  {
+    "id": 13,
+    "name": "Block"
+  },
+  {
+    "id": 14,
+    "name": "Change direction"
+  },
+  {
+    "id": 15,
+    "name": "Fire"
+  },
+  {
+    "id": 16,
+    "name": "Eye"
+  },
+  {
+    "id": 17,
+    "name": "Shuffle pick"
+  },
+  {
+    "id": 18,
+    "name": "Switch deck"
+  }
+]
