@@ -7,6 +7,6 @@
   },
   "scripts": {
     "dev": "bun run ./server/src/main.js",
-    "dev-node": "node run ./server/src/main.js"
+    "dev-node": "node ./server/src/main.js"
   }
 }
