@@ -2,6 +2,7 @@
   "dependencies": {
     "express": "^5.2.1",
     "logpleaser": "^1.0.4",
+    "path": "^0.12.7",
     "winston": "^3.19.0"
   },
   "scripts": {
