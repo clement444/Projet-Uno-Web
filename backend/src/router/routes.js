@@ -1,4 +1,4 @@
-import middlewares from "./middlewares";
+import middlewares from "../middlewares/auth";
 import Logger from "logpleaser";
 import path from "path";
 

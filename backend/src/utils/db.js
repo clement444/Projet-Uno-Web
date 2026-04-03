@@ -1,6 +1,6 @@
-import { Database } from 'bun:sqlite';
+import { Database } from "bun:sqlite";
 
-const db = new Database(new URL('./database.db', import.meta.url).pathname);
+const db = new Database(new URL("../../data/", import.meta.url).pathname);
 
 db.run(`
   CREATE TABLE IF NOT EXISTS users (
