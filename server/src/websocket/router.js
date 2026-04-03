@@ -13,7 +13,5 @@ export function router(socket, request, wss) {
     handleEvent(message, socket, wss);
   });
 
-  socket.on("close", () => {
-    // TODO: nettoyage de la partie liée au socket
-  });
+  socket.on("close", () => {});
 }

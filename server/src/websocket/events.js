@@ -21,25 +21,21 @@ export function handleEvent(message, socket, wss) {
 
 function onJoinRoom(message, socket, wss) {
   const { room_id, player_id, name } = message;
-  // TODO: récupérer la room via l'API et y ajouter le joueur
   broadcast(wss, { type: "player_joined", room_id, player_id, name });
 }
 
 function onLeaveRoom(message, socket, wss) {
   const { room_id, player_id } = message;
-  // TODO: retirer le joueur de la room
   broadcast(wss, { type: "player_left", room_id, player_id });
 }
 
 function onPlayCard(message, socket, wss) {
   const { room_id, player_id, card_id } = message;
-  // TODO: vérifier la validité du coup via la logique de Thomas
   broadcast(wss, { type: "card_played", room_id, player_id, card_id });
 }
 
 function onDrawCard(message, socket, wss) {
   const { room_id, player_id } = message;
-  // TODO: piocher une carte et la renvoyer au joueur uniquement
   socket.send(JSON.stringify({ type: "card_drawn", room_id, player_id }));
 }
 
