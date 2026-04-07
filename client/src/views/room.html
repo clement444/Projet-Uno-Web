@@ -5,5 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Uno - Salle d'attente</title>
   </head>
-  <body></body>
+  <body>
+    <header>
+      <img src="/public/images/logo.png" alt="Uno" />
+      <span id="room-name"></span>
+    </header>
+    <main>
+      <section id="player-list">
+        <ul id="players"></ul>
+      </section>
+      <section id="actions">
+        <button id="start-btn" hidden>Lancer la partie</button>
+        <button id="leave-btn">Quitter la room</button>
+      </section>
+    </main>
+    <script src="/public/js/room.js"></script>
+  </body>
 </html>
