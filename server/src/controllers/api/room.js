@@ -1,5 +1,5 @@
-import { Room } from "../structures/game/room";
-import { rooms } from "../../data/game";
+import { Room } from "../../structures/game/room";
+import { rooms } from "../../../data/game";
 
 export function newRoom(id, name, max_players) {
   rooms.push(new Room(id, name, max_players));
