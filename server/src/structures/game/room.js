@@ -1,5 +1,6 @@
 export class Room {
   id;
+  owner_id;
   name;
   players;
   max_players;
@@ -9,6 +10,10 @@ export class Room {
     this.name = name;
     this.players = [];
     this.max_players = max_players;
+  }
+
+  setOwner(player) {
+    this.owner_id = player.id;
   }
 
   addPlayer(player) {
