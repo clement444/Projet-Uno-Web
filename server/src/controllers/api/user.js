@@ -8,7 +8,7 @@ export function createUser(username, password) {
 
   try {
     const stmt = db.prepare(
-      "INSERT INTO users (username, password) VALUES (?, ?)"
+      "INSERT INTO users (username, password) VALUES (?, ?)",
     );
     const result = stmt.run(username, password_hash);
     const user_id = result.lastInsertRowid;
