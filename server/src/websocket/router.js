@@ -1,4 +1,4 @@
-import { handleEvent } from "./events.js";
+import { handleEvent, broadcast } from "./events.js";
 
 export function router(socket, request, wss) {
   socket.on("message", (raw) => {

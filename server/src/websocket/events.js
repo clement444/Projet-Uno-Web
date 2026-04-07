@@ -19,17 +19,19 @@ export function handleEvent(message, socket, wss) {
 
 function onJoinRoom(message, socket, wss) {
   const { room_id, player_id, name } = message;
-  broadcast(wss, { type: "player_joined", room_id, player_id, name });
+  socket.room_id = room_id;
+  broadcast(wss, room_id, { type: "player_joined", room_id, player_id, name });
 }
 
 function onLeaveRoom(message, socket, wss) {
   const { room_id, player_id } = message;
-  broadcast(wss, { type: "player_left", room_id, player_id });
+  broadcast(wss, room_id, { type: "player_left", room_id, player_id });
+  socket.room_id = null;
 }
 
 function onPlayCard(message, socket, wss) {
   const { room_id, player_id, card_id } = message;
-  broadcast(wss, { type: "card_played", room_id, player_id, card_id });
+  broadcast(wss, room_id, { type: "card_played", room_id, player_id, card_id });
 }
 
 function onDrawCard(message, socket, wss) {
@@ -37,10 +39,10 @@ function onDrawCard(message, socket, wss) {
   socket.send(JSON.stringify({ type: "card_drawn", room_id, player_id }));
 }
 
-function broadcast(wss, data) {
+export function broadcast(wss, room_id, data) {
   const payload = JSON.stringify(data);
   wss.clients.forEach((client) => {
-    if (client.readyState === 1) {
+    if (client.readyState === 1 && client.room_id === room_id) {
       client.send(payload);
     }
   });
