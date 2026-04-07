@@ -7,6 +7,7 @@ import db from "./utils/db";
 export const app = express();
 const port = 3000;
 
+app.use(express.json());
 app.use("/public", express.static(path.join(__dirname, "../../client/public")));
 
 // Init routes
