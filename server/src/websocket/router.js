@@ -13,5 +13,9 @@ export function router(socket, request, wss) {
     handleEvent(message, socket, wss);
   });
 
-  socket.on("close", () => {});
+  socket.on("close", () => {
+    if (socket.room_id) {
+      broadcast(wss, socket.room_id, { type: "player_disconnected", room_id: socket.room_id });
+    }
+  });
 }
