@@ -3,11 +3,9 @@
     "express": "^5.2.1",
     "logpleaser": "^1.0.4",
     "path": "^0.12.7",
-    "winston": "^3.19.0",
-    "ws": "^8.20.0"
+    "sqlite": "^5.1.1"
   },
   "scripts": {
-    "dev": "bun run ./server/src/main.js",
-    "dev-node": "node run ./server/src/main.js"
+    "dev": "bun run ./server/src/index.js"
   }
 }
