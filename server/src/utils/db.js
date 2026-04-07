@@ -12,6 +12,7 @@ db.run(`
   )
 `);
 
+<<<<<<< HEAD
 db.run(`
   CREATE TABLE IF NOT EXISTS rooms (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,4 +23,6 @@ db.run(`
   )
 `);
 
+=======
+>>>>>>> 043250c3f8ac1216976a857f96f8afac2ceecf74
 export default db;

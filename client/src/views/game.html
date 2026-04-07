@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uno - Partie</title>
+  </head>
+  <body>
+    <header>
+      <span id="room-name"></span>
+      <span id="current-player-name"></span>
+    </header>
+    <main>
+      <section id="opponents">
+        <ul id="opponent-list"></ul>
+      </section>
+      <section id="board">
+        <div id="draw-pile">
+          <button id="draw-btn">Piocher</button>
+        </div>
+        <div id="discard-pile">
+          <div id="current-card"></div>
+        </div>
+      </section>
+      <section id="hand">
+        <ul id="player-cards"></ul>
+      </section>
+    </main>
+    <script src="/public/js/game.js"></script>
+  </body>
+</html>
