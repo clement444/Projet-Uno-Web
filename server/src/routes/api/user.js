@@ -8,12 +8,11 @@ export default () => {
     const user = res.locals.user;
 
     if (!user) {
-      res.statusCode = 400;
-      res.json({
+      res.status(400).json({
         message: "You are not logged in.",
       });
     } else {
-      res.json(user);
+      res.status(200).json(user);
     }
   });
 
@@ -24,24 +23,21 @@ export default () => {
     const password = data.password;
 
     if (typeof username != String || typeof password != String) {
-      res.statusCode = 400;
-      res.json({
+      res.status(400).json({
         message: "Provided data is malformed.",
       });
       return;
     }
 
     if (username == undefined || username.trim() == "") {
-      res.statusCode = 400;
-      res.json({
+      res.status(400).json({
         message: "No username provided.",
       });
       return;
     }
 
     if (username == undefined || password.trim() == "") {
-      res.statusCode = 400;
-      res.json({
+      res.status(400).json({
         message: "No password provided.",
       });
       return;
@@ -57,28 +53,25 @@ export default () => {
     const user = res.locals.user;
 
     if (typeof user_id != String) {
-      res.statusCode = 400;
-      res.json({
+      res.status(400).json({
         message: "Provided data is malformed.",
       });
       return;
     }
 
-    if (username == undefined ) {
-      res.statusCode = 400;
-      res.json({
+    if (username == undefined) {
+      res.status(400).json({
         message: "No username provided.",
       });
       return;
     }
 
     if (!user) {
-      res.statusCode = 400;
-      res.json({
+      res.status(400).json({
         message: "You are not logged in.",
       });
     } else {
-      res.json(user);
+      res.status(200).json(user);
     }
   });
 };
