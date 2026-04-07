@@ -20,14 +20,14 @@ export function createUser(username, password) {
   }
 }
 
-export function loginUser(username, password) {
+export function loginUser(username, password_hash) {
   const user = db
     .prepare("SELECT * FROM users WHERE username = ?")
     .get(username);
 
   if (!user) return null;
 
-  const valid = bcrypt.compareSync(password, user.password);
+  const valid = bcrypt.compareSync(password_hash, user.password);
   if (!valid) return null;
 
   const token = generate_token(user.id, user.password);
