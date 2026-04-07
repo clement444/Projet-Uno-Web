@@ -12,4 +12,14 @@ db.run(`
   )
 `);
 
+db.run(`
+  CREATE TABLE IF NOT EXISTS rooms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ownerId INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    players TEXT NOT NULL,
+    max_players INTEGER NOT NULL
+  )
+`);
+
 export default db;
