@@ -1,6 +1,6 @@
 import { handleEvent, broadcast } from "./events.js";
 
-export function router(socket, request, wss) {
+export function router(socket, wss) {
   socket.on("message", (raw) => {
     let message;
     try {
