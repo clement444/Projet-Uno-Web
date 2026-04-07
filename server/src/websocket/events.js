@@ -1,5 +1,3 @@
-import { Player } from "../structures/user/player.js";
-
 export function handleEvent(message, socket, wss) {
   switch (message.type) {
     case "join_room":
