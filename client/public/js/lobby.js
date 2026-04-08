@@ -52,6 +52,7 @@ document.getElementById("join-room-form").addEventListener("submit", (e) => {
 document.getElementById("create-room-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = document.getElementById("room-name").value;
+  const msg = document.getElementById("create-room-msg");
   const res = await fetch("/api/room", {
     method: "POST",
     headers: {
@@ -61,9 +62,17 @@ document.getElementById("create-room-form").addEventListener("submit", async (e)
     body: JSON.stringify({ name, max_players: 4 }),
   });
   const data = await res.json();
-  if (!res.ok) return alert(data.error);
+  if (!res.ok) {
+    msg.textContent = data.error;
+    msg.style.color = "red";
+    msg.hidden = false;
+    return;
+  }
+  msg.textContent = `Room "${name}" créée avec succès !`;
+  msg.style.color = "green";
+  msg.hidden = false;
   localStorage.setItem("uno_room_id", data.id);
-  window.location.href = "/room";
+  setTimeout(() => { window.location.href = "/room"; }, 1000);
 });
 
 loadRooms();
