@@ -46,6 +46,7 @@ document.getElementById("join-room-form").addEventListener("submit", (e) => {
   const roomId = joinBtn.dataset.id;
   if (!roomId) return;
   localStorage.setItem("uno_room_id", roomId);
+  localStorage.setItem("uno_is_host", "false");
   window.location.href = "/room";
 });
 
@@ -72,6 +73,7 @@ document.getElementById("create-room-form").addEventListener("submit", async (e)
   msg.style.color = "green";
   msg.hidden = false;
   localStorage.setItem("uno_room_id", data.id);
+  localStorage.setItem("uno_is_host", "true");
   setTimeout(() => { window.location.href = "/room"; }, 1000);
 });
 
