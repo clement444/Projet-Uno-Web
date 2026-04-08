@@ -13,6 +13,13 @@ tabRegister.addEventListener("click", () => {
   loginForm.hidden = true;
 });
 
+function showMsg(id, text, isError) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.style.color = isError ? "red" : "green";
+  el.hidden = false;
+}
+
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const username = document.getElementById("login-username").value;
@@ -23,7 +30,7 @@ loginForm.addEventListener("submit", async (e) => {
     body: JSON.stringify({ username, password }),
   });
   const data = await res.json();
-  if (!res.ok) return alert(data.error);
+  if (!res.ok) return showMsg("login-msg", data.error, true);
   localStorage.setItem("uno_token", data.token);
   localStorage.setItem("uno_username", username);
   window.location.href = "/lobby";
@@ -34,15 +41,16 @@ registerForm.addEventListener("submit", async (e) => {
   const username = document.getElementById("register-username").value;
   const password = document.getElementById("register-password").value;
   const confirm = document.getElementById("register-confirm").value;
-  if (password !== confirm) return alert("Les mots de passe ne correspondent pas");
+  if (password !== confirm) return showMsg("register-msg", "Les mots de passe ne correspondent pas", true);
   const res = await fetch("/api/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
   const data = await res.json();
-  if (!res.ok) return alert(data.error);
+  if (!res.ok) return showMsg("register-msg", data.error, true);
+  showMsg("register-msg", "Compte créé avec succès !", false);
   localStorage.setItem("uno_token", data.token);
   localStorage.setItem("uno_username", username);
-  window.location.href = "/lobby";
+  setTimeout(() => { window.location.href = "/lobby"; }, 1000);
 });
