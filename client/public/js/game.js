@@ -6,7 +6,7 @@ if (!token || !roomId) window.location.href = "/";
 
 document.getElementById("current-player-name").textContent = username;
 
-const ws = new WebSocket(`ws://${location.host}`);
+const ws = new WebSocket(`ws://${location.host}?token=${token}`);
 let myCardCount = 0;
 let pendingUno = {};
 
