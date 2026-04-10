@@ -14,7 +14,7 @@ export class Player {
   }
 
   removeCard(card_index) {
-    this.players.splice(card_index, 1);
+    this.cards.splice(card_index, 1);
   }
 
   setDeck(cards) {
