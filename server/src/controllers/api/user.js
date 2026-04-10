@@ -12,8 +12,12 @@ export async function createUser(req, res) {
     const result = stmt.run(username, hashed);
     const token = generate_token(result.lastInsertRowid);
     res.status(201).json({ token });
-  } catch {
-    res.status(409).json({ error: "Nom d'utilisateur déjà pris" });
+  } catch (err) {
+    console.error("createUser error:", err);
+    if (err.message?.includes("UNIQUE constraint failed")) {
+      return res.status(409).json({ error: "Nom d'utilisateur déjà pris" });
+    }
+    res.status(500).json({ error: "Erreur lors de la création du compte" });
   }
 }
 
