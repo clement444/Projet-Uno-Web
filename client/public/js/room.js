@@ -9,7 +9,14 @@ document.getElementById("room-name").textContent = roomId;
 const ws = new WebSocket(`ws://${location.host}?token=${token}`);
 
 ws.addEventListener("open", () => {
-  ws.send(JSON.stringify({ type: "join_room", room_id: roomId, player_id: username, name: username }));
+  ws.send(
+    JSON.stringify({
+      type: "join_room",
+      room_id: roomId,
+      player_id: username,
+      name: username,
+    }),
+  );
 });
 
 ws.addEventListener("message", (event) => {
@@ -35,8 +42,22 @@ function removePlayer(id) {
   if (el) el.remove();
 }
 
-document.getElementById("leave-btn").addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "leave_room", room_id: roomId, player_id: username }));
+document.getElementById("leave-btn").addEventListener("click", async () => {
+  const res = await fetch(`/api/room?leave=${roomId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  console.dir(res);
+  ws.send(
+    JSON.stringify({
+      type: "leave_room",
+      room_id: roomId,
+      player_id: username,
+    }),
+  );
   localStorage.removeItem("uno_room_id");
   window.location.href = "/lobby";
 });
@@ -46,5 +67,11 @@ const isHost = localStorage.getItem("uno_is_host") === "true";
 if (isHost) startBtn.hidden = false;
 
 startBtn.addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "start_game", room_id: roomId, player_id: username }));
+  ws.send(
+    JSON.stringify({
+      type: "start_game",
+      room_id: roomId,
+      player_id: username,
+    }),
+  );
 });

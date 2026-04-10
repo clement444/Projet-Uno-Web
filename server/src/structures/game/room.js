@@ -1,5 +1,9 @@
 import db from "../../utils/db";
-import { getRoomById } from "../../controllers/api/room";
+import {
+  deleteRoom,
+  getRoomById,
+  isPlayerInARoom,
+} from "../../controllers/api/room";
 
 export class Room {
   id;
@@ -29,7 +33,9 @@ export class Room {
       .get(this.id, player_id);
     if (exists) return;
 
-    // Insert player
+    const isInARoom = isPlayerInARoom(player_id);
+    if (isInARoom) return;
+
     db.prepare("INSERT INTO room_players (room_id, user_id) VALUES (?, ?)").run(
       this.id,
       player_id,
@@ -37,9 +43,16 @@ export class Room {
   }
 
   removePlayer(player_id) {
+    console.log("dddd");
     db.prepare(
       "DELETE FROM room_players WHERE room_id = ? AND user_id = ?",
     ).run(this.id, player_id);
+
+    const player_count = this.getPlayers();
+    console.log(player_count);
+    if (player_count == 0) {
+      deleteRoom(this.id);
+    }
   }
 
   getPlayer(player_id) {

@@ -10,15 +10,37 @@ export function createRoom(ownerId, name, maxPlayers = 4) {
 }
 
 export function getRoomById(id) {
-  const stmt = db.prepare("SELECT * FROM rooms WHERE id = ?");
+  const stmt = db.prepare(`
+    SELECT
+      rooms.*,
+      COUNT(room_players.id) AS player_count
+    FROM rooms
+    LEFT JOIN room_players
+      ON rooms.id = room_players.room_id
+    WHERE rooms.id = ?
+    GROUP BY rooms.id
+  `);
+
   const row = stmt.get(id);
   if (!row) return null;
+
   const room = new Room(row.id, row.name, row.max_players);
+  room.player_count = row.player_count;
+
   return room;
 }
 
 export function getAllRooms() {
-  const stmt = db.prepare("SELECT * FROM rooms");
+  const stmt = db.prepare(`
+    SELECT
+      rooms.*,
+      COUNT(room_players.id) AS player_count
+    FROM rooms
+    LEFT JOIN room_players
+      ON rooms.id = room_players.room_id
+    GROUP BY rooms.id
+  `);
+
   return stmt.all();
 }
 

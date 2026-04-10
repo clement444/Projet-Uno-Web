@@ -17,7 +17,8 @@ export default () => {
 
   app.post("/api/room", check_auth, function (req, res) {
     res.setHeader("Content-Type", "application/json");
-    const data = req.body;
+    const body = req.body;
+    const data = req.query;
     const user = req.user;
 
     if (data.join) {
@@ -57,6 +58,8 @@ export default () => {
         return res.status(404).json({ message: "Unable to leave room." });
 
       const isInRoom = room.getPlayer(user.id);
+
+      console.log(isInRoom);
       if (!isInRoom)
         return res.status(400).json({ message: "You are not in the room." });
 
@@ -64,8 +67,8 @@ export default () => {
       return res.status(200).json(room);
     }
 
-    const name = data.name;
-    const max_players = data.max_players;
+    const name = body.name;
+    const max_players = body.max_players;
 
     const room = createRoom(user.id, name, max_players);
     if (!room)
