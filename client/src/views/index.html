@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Uno - Connexion</title>
+    <link rel="stylesheet" href="/public/css/index.css" />
   </head>
   <body>
     <header style="text-align: center">
@@ -15,7 +16,7 @@
         <button type="button" id="go-lobby-btn">Aller au lobby</button>
         <button type="button" id="logout-btn">Se déconnecter</button>
       </div>
-      <div id="auth-section">
+      <div id="auth-card">
         <div id="auth-tabs">
           <button type="button" id="tab-login" class="tab active">Connexion</button>
           <button type="button" id="tab-register" class="tab">Créer un compte</button>
@@ -45,10 +46,11 @@
           <li><strong>Joker</strong> : choisis librement la prochaine couleur.</li>
           <li><strong>Joker +4</strong> : choisis la couleur, le joueur suivant pioche 4 cartes.</li>
           <li>Dis <strong>"UNO"</strong> quand il te reste 1 carte ! Si tu oublies et qu'un adversaire clique sur <strong>"Contre UNO"</strong> avant toi, tu pioches 2 cartes.</li>
-          <li>Le premier à poser toutes ses cartes gagne.</li>
+          <li>Le premier à avoir 0 carte en main gagne.</li>
         </ul>
       </section>
     </main>
+    <div class="bg-container" id="bg-container"></div>
     <script src="/public/js/index.js"></script>
   </body>
 </html>
