@@ -17,13 +17,59 @@ export default () => {
   });
 
   app.post("/api/room", check_auth, function (req, res) {
-    logger_http.info("[POST] /api/room");
-    const { name, max_players } = req.body;
-    if (!name) return res.status(400).json({ error: "Nom de room requis" });
-    const existing = getAllRooms().find((r) => r.name === name);
-    if (existing) return res.status(409).json({ error: "Une room avec ce nom existe déjà" });
-    const room = createRoom(req.user.user_id, name, max_players || 4);
-    if (!room) return res.status(500).json({ error: "Erreur lors de la création de la room" });
-    res.status(201).json({ id: room.id, name: room.name });
+    res.setHeader("Content-Type", "application/json");
+    const data = req.body;
+    const user = res.locals.user;
+
+    if (data.join) {
+      const room_id = data.join;
+      const room = getRoomById(room_id);
+      if (!room)
+        return res.status(404).json({ message: "Unable to join room." });
+
+      try {
+        const isInARoom = isPlayerInARoom(user.id);
+        if (isInARoom)
+          return res.status(401).json({
+            message:
+              "You cannot join more than 1 room, leave your current room before joining a new one.",
+          });
+
+        room.addPlayer(user.id);
+        res.status(200).json(room);
+      } catch (e) {
+        switch (e) {
+          case "Already in room":
+            res.status(400).json({ message: e });
+            break;
+          case "Room is full":
+            res.status(401).json({ message: e });
+            break;
+          default:
+            res.status(500).json({ message: "Unable to join the room." });
+            break;
+        }
+      }
+    }
+
+    if (data.leave) {
+      const room_id = data.join;
+      const room = getRoomById(room_id);
+      if (!room)
+        return res.status(404).json({ message: "Unable to leave room." });
+
+      const isInRoom = room.getPlayer(user.id);
+      if (!isInRoom)
+        return res.status(400).json({ message: "You are not in the room." });
+
+      room.removePlayer(user.id);
+      res.status(200).json(room);
+    }
+
+    const name = data.name;
+    const max_players = data.max_players;
+    const player = [].push(new Player(user.id, user.username));
+
+    createRoom(user.id, name, player, max_players);
   });
 };
