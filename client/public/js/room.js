@@ -6,7 +6,7 @@ if (!token || !roomId) window.location.href = "/";
 
 document.getElementById("room-name").textContent = roomId;
 
-const ws = new WebSocket(`ws://${location.host}`);
+const ws = new WebSocket(`ws://${location.host}?token=${token}`);
 
 ws.addEventListener("open", () => {
   ws.send(JSON.stringify({ type: "join_room", room_id: roomId, player_id: username, name: username }));
