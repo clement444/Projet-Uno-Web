@@ -1,3 +1,6 @@
+const token = localStorage.getItem("uno_token");
+if (token) window.location.href = "/lobby";
+
 const tabLogin = document.getElementById("tab-login");
 const tabRegister = document.getElementById("tab-register");
 const loginForm = document.getElementById("login-form");
