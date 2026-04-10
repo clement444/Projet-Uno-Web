@@ -6,8 +6,8 @@
     <title>Uno - Lobby</title>
   </head>
   <body>
-    <header>
-      <img src="/public/images/logo.png" alt="Uno" />
+    <header style="text-align: center">
+      <img src="/public/images/logo.png" alt="Uno" width="250" />
       <span id="current-username"></span>
     </header>
     <main>
@@ -16,6 +16,13 @@
         <form id="create-room-form">
           <input type="text" id="room-name" name="room-name" placeholder="Nom de la room" maxlength="30" required />
           <button type="submit">Créer une room</button>
+          <p id="create-room-msg" hidden></p>
+        </form>
+      </section>
+      <section id="join-room">
+        <form id="join-room-form">
+          <input type="text" id="search-room" name="search-room" placeholder="Rechercher une room" />
+          <button type="submit" id="join-room-btn" disabled>Rejoindre</button>
         </form>
       </section>
       <hr />

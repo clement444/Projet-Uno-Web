@@ -1,40 +1,37 @@
-import bcrypt from "bcryptjs";
-import { generate_token } from "../../utils/auth";
 import db from "../../utils/db";
+import { generate_token } from "../../utils/auth";
 
-export function createUser(username, password) {
-  const password_hash = bcrypt.hashSync(password, 10);
-
+export async function createUser(req, res) {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: "Pseudo et mot de passe requis" });
+  }
+  const hashed = await Bun.password.hash(password);
   try {
-    const stmt = db.prepare(
-      "INSERT INTO users (username, password) VALUES (?, ?)",
-    );
-    const result = stmt.run(username, password_hash);
-    const user_id = result.lastInsertRowid;
-
-    const token = generate_token(user_id, password_hash);
-    return { user_id, token };
+    const stmt = db.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)");
+    const result = stmt.run(username, hashed);
+    const token = generate_token(result.lastInsertRowid);
+    res.status(201).json({ token });
   } catch {
-    return null;
+    res.status(409).json({ error: "Nom d'utilisateur déjà pris" });
   }
 }
 
-export function loginUser(username, password_hash) {
-  const user = db
-    .prepare("SELECT * FROM users WHERE username = ?")
-    .get(username);
-
-  if (!user) return null;
-
-  const valid = bcrypt.compareSync(password_hash, user.password);
-  if (!valid) return null;
-
-  const token = generate_token(user.id, user.password);
-  return { user_id: user.id, token };
+export async function loginUser(req, res) {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: "Pseudo et mot de passe requis" });
+  }
+  const user = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
+  if (!user) {
+    return res.status(401).json({ error: "Identifiants incorrects" });
+  }
+  const valid = await Bun.password.verify(password, user.password_hash);
+  if (!valid) {
+    return res.status(401).json({ error: "Identifiants incorrects" });
+  }
+  const token = generate_token(user.id);
+  res.json({ token });
 }
 
-export function removeUser(user_id) {
-  const stmt = db.prepare("DELETE FROM users WHERE id = ?");
-  const result = stmt.run(user_id);
-  return result.changes > 0;
-}
+export function removeUser() {}
