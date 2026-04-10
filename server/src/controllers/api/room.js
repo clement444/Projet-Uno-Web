@@ -26,3 +26,11 @@ export function deleteRoom(id) {
   const stmt = db.prepare("DELETE FROM rooms WHERE id = ?");
   stmt.run(id);
 }
+
+export function isPlayerInARoom(player_id) {
+  const row = db
+    .query("SELECT 1 FROM room_players WHERE user_id = ? LIMIT 1")
+    .get(player_id);
+
+  return !!row;
+}
