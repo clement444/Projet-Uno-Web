@@ -18,7 +18,7 @@ export class Room {
     if (!room) return null;
 
     const stmt = db.prepare("UPDATE rooms SET owner_id = ? WHERE id = ?");
-    stmt.run(newOwnerId, this.id);
+    stmt.run(player_id, this.id);
 
     return getRoomById(this.id);
   }

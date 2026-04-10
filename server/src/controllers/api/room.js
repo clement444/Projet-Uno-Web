@@ -6,7 +6,7 @@ export function createRoom(ownerId, name, maxPlayers = 4) {
     "INSERT INTO rooms (owner_id, name, max_players) VALUES (?, ?, ?)",
   );
   const info = stmt.run(ownerId, name, maxPlayers);
-  return getRoomById(info.lastInsertRowId);
+  return getRoomById(info.lastInsertRowid);
 }
 
 export function getRoomById(id) {
@@ -19,8 +19,7 @@ export function getRoomById(id) {
 
 export function getAllRooms() {
   const stmt = db.prepare("SELECT * FROM rooms");
-  const rows = stmt.all();
-  return rows;
+  return stmt.all();
 }
 
 export function deleteRoom(id) {

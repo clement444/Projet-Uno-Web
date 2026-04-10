@@ -1,5 +1,6 @@
 import { check_auth } from "../../middleware/auth";
 import { app } from "../../index";
+import { logger_http } from "../../utils/logger";
 import {
   createRoom,
   deleteRoom,
@@ -7,27 +8,17 @@ import {
   getRoomById,
   isPlayerInARoom,
 } from "../../controllers/api/room";
-import { Player } from "../../structures/game/player";
 
 export default () => {
-  app.get("/api/room", function (req, res) {
-    res.setHeader("Content-Type", "application/json");
-    const room_id = req.query.id;
-
-    if (room_id) {
-      const room = getRoomById(room_id);
-      if (!room) return res.status(404).json({ message: "No room found." });
-
-      res.json(room);
-    } else {
-      res.json(getAllRooms());
-    }
+  app.get("/api/room", check_auth, function (_, res) {
+    logger_http.info("[GET] /api/room");
+    res.json(getAllRooms());
   });
 
   app.post("/api/room", check_auth, function (req, res) {
     res.setHeader("Content-Type", "application/json");
     const data = req.body;
-    const user = res.locals.user;
+    const user = req.user;
 
     if (data.join) {
       const room_id = data.join;
@@ -44,24 +35,23 @@ export default () => {
           });
 
         room.addPlayer(user.id);
-        res.status(200).json(room);
+        return res.status(200).json(room);
       } catch (e) {
         switch (e) {
           case "Already in room":
-            res.status(400).json({ message: e });
-            break;
+            return res.status(400).json({ message: e });
           case "Room is full":
-            res.status(401).json({ message: e });
-            break;
+            return res.status(401).json({ message: e });
           default:
-            res.status(500).json({ message: "Unable to join the room." });
-            break;
+            return res
+              .status(500)
+              .json({ message: "Unable to join the room." });
         }
       }
     }
 
     if (data.leave) {
-      const room_id = data.join;
+      const room_id = data.leave;
       const room = getRoomById(room_id);
       if (!room)
         return res.status(404).json({ message: "Unable to leave room." });
@@ -71,14 +61,18 @@ export default () => {
         return res.status(400).json({ message: "You are not in the room." });
 
       room.removePlayer(user.id);
-      res.status(200).json(room);
+      return res.status(200).json(room);
     }
 
     const name = data.name;
     const max_players = data.max_players;
-    const player = [].push(new Player(user.id, user.username));
 
-    createRoom(user.id, name, player, max_players);
+    const room = createRoom(user.id, name, max_players);
+    if (!room)
+      return res.status(500).json({ message: "Unable to create the room." });
+
+    room.addPlayer(user.id);
+    return res.status(201).json(room);
   });
 
   app.delete("/api/room", check_auth, function (req, res) {
@@ -90,7 +84,7 @@ export default () => {
     if (!room)
       return res.status(404).json({ message: "Unable to remove the room." });
 
-    if (room.owner_id != res.locals.user.id)
+    if (room.owner_id != req.user.id)
       return res
         .status(401)
         .json({ message: "You can't remove room that is not yours." });
