@@ -11,7 +11,12 @@ async function loadRooms() {
   const res = await fetch("/api/room", {
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (res.status === 401) { window.location.href = "/"; return; }
+  if (res.status === 401) {
+    localStorage.removeItem("uno_token");
+    localStorage.removeItem("uno_username");
+    window.location.href = "/";
+    return;
+  }
   rooms = await res.json();
   renderRooms();
   filterRooms();
