@@ -5,6 +5,7 @@ import {
   deleteRoom,
   getAllRooms,
   getRoomById,
+  isPlayerInARoom,
 } from "../../controllers/api/room";
 import { Player } from "../../structures/game/player";
 
@@ -28,13 +29,20 @@ export default () => {
     const data = req.body;
     const user = res.locals.user;
 
-    if (data.join_id) {
-      const room_id = data.join_id;
+    if (data.join) {
+      const room_id = data.join;
       const room = getRoomById(room_id);
       if (!room)
         return res.status(404).json({ message: "Unable to join room." });
 
       try {
+        const isInARoom = isPlayerInARoom(user.id);
+        if (isInARoom)
+          return res.status(401).json({
+            message:
+              "You cannot join more than 1 room, leave your current room before joining a new one.",
+          });
+
         room.addPlayer(user.id);
         res.status(200).json(room);
       } catch (e) {
@@ -50,13 +58,27 @@ export default () => {
             break;
         }
       }
-    } else {
-      const name = data.name;
-      const max_players = data.max_players;
-      const player = [].push(new Player(user.id, user.username));
-
-      createRoom(user.id, name, player, max_players);
     }
+
+    if (data.leave) {
+      const room_id = data.join;
+      const room = getRoomById(room_id);
+      if (!room)
+        return res.status(404).json({ message: "Unable to leave room." });
+
+      const isInRoom = room.getPlayer(user.id);
+      if (!isInRoom)
+        return res.status(400).json({ message: "You are not in the room." });
+
+      room.removePlayer(user.id);
+      res.status(200).json(room);
+    }
+
+    const name = data.name;
+    const max_players = data.max_players;
+    const player = [].push(new Player(user.id, user.username));
+
+    createRoom(user.id, name, player, max_players);
   });
 
   app.delete("/api/room", check_auth, function (req, res) {
