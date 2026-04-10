@@ -1,6 +1,6 @@
 <svg width="600" height="900" viewBox="0 0 600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_202_59)">
-<rect width="600" height="900" rx="30" fill="white"/>
+<rect width="600" height="900" rx="30" fill="#F2F2F2"/>
 <path d="M497.392 232.575C534.132 265.874 546.167 320.233 535.061 381.931C523.965 443.571 489.82 511.967 435.096 572.348C380.372 632.728 315.652 673.415 255.397 690.501C195.085 707.603 139.808 700.956 103.068 667.658C66.3277 634.359 54.2927 580 65.3989 518.302C76.4949 456.662 110.64 388.265 165.364 327.884C220.088 267.504 284.807 226.818 345.063 209.732C405.374 192.63 460.652 199.277 497.392 232.575Z" stroke="#161616" stroke-width="7"/>
 <g clip-path="url(#clip1_202_59)">
 <path d="M501.667 89.9998C501.667 92.21 502.544 94.3296 504.107 95.8924C505.67 97.4552 507.79 98.3332 510 98.3332C512.21 98.3332 514.33 97.4552 515.892 95.8924C517.455 94.3296 518.333 92.21 518.333 89.9998C518.333 87.7897 517.455 85.6701 515.892 84.1073C514.33 82.5445 512.21 81.6665 510 81.6665C507.79 81.6665 505.67 82.5445 504.107 84.1073C502.544 85.6701 501.667 87.7897 501.667 89.9998Z" stroke="#161616" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -17,16 +17,16 @@
 <rect x="3.5" y="3.5" width="593" height="893" rx="26.5" stroke="#161616" stroke-width="7"/>
 <defs>
 <clipPath id="clip0_202_59">
-<rect width="600" height="900" rx="30" fill="white"/>
+<rect width="600" height="900" rx="30" fill="#F2F2F2"/>
 </clipPath>
 <clipPath id="clip1_202_59">
-<rect width="100" height="100" fill="white" transform="translate(460 40)"/>
+<rect width="100" height="100" fill="#F2F2F2" transform="translate(460 40)"/>
 </clipPath>
 <clipPath id="clip2_202_59">
-<rect width="100" height="100" fill="white" transform="translate(40 760)"/>
+<rect width="100" height="100" fill="#F2F2F2" transform="translate(40 760)"/>
 </clipPath>
 <clipPath id="clip3_202_59">
-<rect width="200" height="200" fill="white" transform="translate(200 350)"/>
+<rect width="200" height="200" fill="#F2F2F2" transform="translate(200 350)"/>
 </clipPath>
 </defs>
 </svg>
