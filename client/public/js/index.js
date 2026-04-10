@@ -1,5 +1,26 @@
 const token = localStorage.getItem("uno_token");
-if (token) window.location.href = "/lobby";
+const username = localStorage.getItem("uno_username");
+
+const authSection = document.getElementById("auth-section");
+const loggedInSection = document.getElementById("logged-in-section");
+
+if (token && username) {
+  authSection.hidden = true;
+  loggedInSection.hidden = false;
+  document.getElementById("logged-username").textContent = username;
+}
+
+document.getElementById("go-lobby-btn").addEventListener("click", () => {
+  window.location.href = "/lobby";
+});
+
+document.getElementById("logout-btn").addEventListener("click", () => {
+  localStorage.removeItem("uno_token");
+  localStorage.removeItem("uno_username");
+  localStorage.removeItem("uno_room_id");
+  localStorage.removeItem("uno_is_host");
+  window.location.reload();
+});
 
 const tabLogin = document.getElementById("tab-login");
 const tabRegister = document.getElementById("tab-register");
