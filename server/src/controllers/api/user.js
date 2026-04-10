@@ -8,7 +8,7 @@ export async function createUser(req, res) {
   }
   const hashed = await Bun.password.hash(password);
   try {
-    const stmt = db.prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+    const stmt = db.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)");
     const result = stmt.run(username, hashed);
     const token = generate_token(result.lastInsertRowid);
     res.status(201).json({ token });
@@ -26,7 +26,7 @@ export async function loginUser(req, res) {
   if (!user) {
     return res.status(401).json({ error: "Identifiants incorrects" });
   }
-  const valid = await Bun.password.verify(password, user.password);
+  const valid = await Bun.password.verify(password, user.password_hash);
   if (!valid) {
     return res.status(401).json({ error: "Identifiants incorrects" });
   }
