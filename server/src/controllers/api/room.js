@@ -6,6 +6,9 @@ export function createRoom(ownerId, name, maxPlayers = 4) {
     "INSERT INTO rooms (owner_id, name, max_players) VALUES (?, ?, ?)",
   );
   const info = stmt.run(ownerId, name, maxPlayers);
+
+  // Ajouter un évènement WS pour afficher le nouveau salon créé
+
   return getRoomById(info.lastInsertRowid);
 }
 

@@ -43,7 +43,6 @@ export class Room {
   }
 
   removePlayer(player_id) {
-    console.log("dddd");
     db.prepare(
       "DELETE FROM room_players WHERE room_id = ? AND user_id = ?",
     ).run(this.id, player_id);

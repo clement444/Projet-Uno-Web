@@ -60,7 +60,7 @@ loginForm.addEventListener("submit", async (e) => {
   });
 
   const data = await res.json();
-  if (!res.ok) return showMsg("login-msg", data.error, true);
+  if (!res.ok) return showMsg("login-msg", data.message, true);
 
   localStorage.setItem("uno_token", data.token);
   localStorage.setItem("uno_username", username);
@@ -116,10 +116,11 @@ const svgLibrary = {
   colors: "/public/assets/cards/colors.svg",
   eye: "/public/assets/cards/eye.svg",
   block: "/public/assets/cards/block.svg",
+  fire: "/public/assets/cards/fire.svg",
 };
 
 const standardKeys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-const specialKeys = ["colors", "eye", "block"];
+const specialKeys = ["colors", "eye", "block", "fire"];
 
 const container = document.getElementById("bg-container");
 
@@ -167,7 +168,7 @@ async function generateBackground() {
 
     const baseSequence = [];
     for (let c = 0; c < cardsPerSet; c++) {
-      const isSpecial = Math.random() < 0.2;
+      const isSpecial = Math.random() < 0.1;
 
       if (isSpecial) {
         baseSequence.push({

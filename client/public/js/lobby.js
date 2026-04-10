@@ -23,6 +23,7 @@ async function loadRooms() {
 }
 
 function renderRooms() {
+  const roomsElement = document.getElementById("room-list");
   const list = document.getElementById("rooms");
   list.innerHTML = "";
   rooms.forEach((room) => {
@@ -32,6 +33,12 @@ function renderRooms() {
     li.dataset.id = room.id;
     list.appendChild(li);
   });
+
+  if (rooms.length > 0) {
+    roomsElement.hidden = false;
+  } else {
+    roomsElement.hidden = true;
+  }
 }
 
 const searchInput = document.getElementById("search-room");
@@ -86,14 +93,13 @@ document
       msg.hidden = false;
       return;
     }
-    msg.textContent = `Room "${name}" créée avec succès !`;
-    msg.style.color = "green";
+    msg.textContent = `Salon "${name}" créé avec succès !`;
     msg.hidden = false;
     localStorage.setItem("uno_room_id", data.id);
     localStorage.setItem("uno_is_host", "true");
     setTimeout(() => {
       window.location.href = "/room";
-    }, 1000);
+    }, 3000);
   });
 
 loadRooms();

@@ -1,5 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}
+
 *,
 *::before,
 *::after {
@@ -11,7 +20,7 @@
 html {
     width: 100vw;
     height: 100vh;
-    background-color: #0a0b0f;
+    background-color: #161616;
     overflow: hidden;
     font-family: "Inter", sans-serif;
 }
@@ -25,7 +34,6 @@ body {
     width: 100vw;
     height: 100vh;
     overflow-y: auto;
-    background-color: #0a0b0f;
 }
 
 header {
@@ -45,6 +53,7 @@ header img {
 
 main {
     width: 420px;
+    padding-bottom: 3em;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -324,7 +333,6 @@ form p {
     overflow: hidden;
     background-color: transparent;
     animation: fadeIn 0.5s ease-out forwards;
-    border-radius: 12px;
 }
 
 .card svg {

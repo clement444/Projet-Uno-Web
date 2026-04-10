@@ -58,8 +58,6 @@ export default () => {
         return res.status(404).json({ message: "Unable to leave room." });
 
       const isInRoom = room.getPlayer(user.id);
-
-      console.log(isInRoom);
       if (!isInRoom)
         return res.status(400).json({ message: "You are not in the room." });
 
