@@ -13,7 +13,6 @@ app.use("/public", express.static(path.join(__dirname, "../../client/public")));
 init_routes();
 
 app.use((err, res) => {
-  logger_main.error(err.stack || err.message);
   res.status(500).json({ message: "Internal Server Error" });
 });
 
