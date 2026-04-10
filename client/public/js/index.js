@@ -44,7 +44,12 @@ registerForm.addEventListener("submit", async (e) => {
   const username = document.getElementById("register-username").value;
   const password = document.getElementById("register-password").value;
   const confirm = document.getElementById("register-confirm").value;
-  if (password !== confirm) return showMsg("register-msg", "Les mots de passe ne correspondent pas", true);
+  if (password !== confirm)
+    return showMsg(
+      "register-msg",
+      "Les mots de passe ne correspondent pas",
+      true,
+    );
   const res = await fetch("/api/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -55,5 +60,7 @@ registerForm.addEventListener("submit", async (e) => {
   showMsg("register-msg", "Compte créé avec succès !", false);
   localStorage.setItem("uno_token", data.token);
   localStorage.setItem("uno_username", username);
-  setTimeout(() => { window.location.href = "/lobby"; }, 1000);
+  setTimeout(() => {
+    window.location.href = "/lobby";
+  }, 1000);
 });
