@@ -1,7 +1,14 @@
 import { check_auth } from "../../middleware/auth";
 import { app } from "../../index";
 import { logger_http } from "../../utils/logger";
-import { createRoom, getAllRooms } from "../../controllers/api/room";
+import {
+  createRoom,
+  deleteRoom,
+  getAllRooms,
+  getRoomById,
+  isPlayerInARoom,
+} from "../../controllers/api/room";
+import { Player } from "../../structures/game/player";
 
 export default () => {
   app.get("/api/room", check_auth, function (_, res) {
