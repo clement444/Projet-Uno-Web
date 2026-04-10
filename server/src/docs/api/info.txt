@@ -1,61 +1,18 @@
-# Users
-## Get info of current logged user
-GET /api/user
-
-## Create a new user
-POST /api/user
-BODY:
-{
-    "username": String,
-    "password": String
-}
-
-## Delete a user
-DELETE /api/user
-HEADERS:
-- Authorization: Bearer (auth_token)
-BODY:
-{
-    "user_id": Integer,
-}
-
-# Rooms
-## Get rooms infos
-GET /api/room
-HEADERS:
-- Authorization: Bearer (auth_token)
-
-## Get specific room infos
-GET /api/room
-HEADERS:
-- Authorization: Bearer (auth_token)
-QUERY PARAMS:
-- id = (room_id)
-
-## Join room
-POST /api/room
-HEADERS:
-- Authorization: Bearer (auth_token)
-BODY:
-{
-    "join_id": room_id,
-}
-
-## Create a new room
-POST /api/room
-HEADERS:
-- Authorization: Bearer (auth_token)
-BODY:
-{
-    "name": String,
-    "max_players": Integer,
-}
-
-## Delete a room
-DELETE /api/room
-HEADERS:
-- Authorization: Bearer (auth_token)
-BODY:
-{
-    "room_id": Integer,
-}
++-----------------------------+----------------------+------------------------------------------+--------------------------------------------------------+
+| Section                     | Action               | Method & Path                            | Details                                                |
++-----------------------------+----------------------+------------------------------------------+--------------------------------------------------------+
+| Users                       | Get logged user info | GET /api/user                            |                                                        |
+|                             | Create new user      | POST /api/user                           | BODY: {"username": String, "password": String}         |
+|                             | Delete a user        | DELETE /api/user                         | HEADERS: Authorization: Bearer (auth_token)            |
+|                             |                      |                                          | BODY: {"user_id": Integer}                             |
++-----------------------------+----------------------+------------------------------------------+--------------------------------------------------------+
+| Rooms                       | Get rooms info       | GET /api/room                            | HEADERS: Authorization: Bearer (auth_token)            |
+|                             | Get specific room    | GET /api/room                            | HEADERS: Authorization: Bearer (auth_token)            |
+|                             |                      |                                          | QUERY PARAMS: id = (room_id)                           |
+|                             | Join room            | POST /api/room                           | HEADERS: Authorization: Bearer (auth_token)            |
+|                             |                      |                                          | BODY: {"join_id": room_id}                             |
+|                             | Create new room      | POST /api/room                           | HEADERS: Authorization: Bearer (auth_token)            |
+|                             |                      |                                          | BODY: {"name": String, "max_players": Integer}         |
+|                             | Delete a room        | DELETE /api/room                         | HEADERS: Authorization: Bearer (auth_token)            |
+|                             |                      |                                          | BODY: {"room_id": Integer}                             |
++-----------------------------+----------------------+------------------------------------------+--------------------------------------------------------+

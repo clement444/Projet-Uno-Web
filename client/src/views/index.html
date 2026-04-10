@@ -4,29 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Uno - Connexion</title>
+    <link rel="stylesheet" href="/public/css/index.css" />
   </head>
   <body>
     <header style="text-align: center">
-      <img src="/public/images/logo.png" alt="Uno" width="250" />
+      <a href="/"><img src="/public/images/logo.png" alt="Uno" width="250" /></a>
     </header>
     <main>
-      <div id="auth-tabs">
-        <button type="button" id="tab-login" class="tab active">Connexion</button>
-        <button type="button" id="tab-register" class="tab">Créer un compte</button>
+      <div id="auth-card">
+        <div id="auth-tabs">
+          <button type="button" id="tab-login" class="tab active">Connexion</button>
+          <button type="button" id="tab-register" class="tab">Créer un compte</button>
+        </div>
+        <form id="login-form">
+          <input type="text" id="login-username" name="username" placeholder="Ton pseudo" maxlength="20" required />
+          <input type="password" id="login-password" name="password" placeholder="Mot de passe" required />
+          <button type="submit">Se connecter</button>
+          <p id="login-msg" hidden></p>
+        </form>
+        <form id="register-form" hidden>
+          <input type="text" id="register-username" name="username" placeholder="Ton pseudo" maxlength="20" required />
+          <input type="password" id="register-password" name="password" placeholder="Mot de passe" required />
+          <input type="password" id="register-confirm" name="confirm" placeholder="Confirmer le mot de passe" required />
+          <button type="submit">Créer le compte</button>
+          <p id="register-msg" hidden></p>
+        </form>
       </div>
-      <form id="login-form" hidden>
-        <input type="text" id="login-username" name="username" placeholder="Ton pseudo" maxlength="20" required />
-        <input type="password" id="login-password" name="password" placeholder="Mot de passe" required />
-        <button type="submit">Se connecter</button>
-        <p id="login-msg" hidden></p>
-      </form>
-      <form id="register-form" hidden>
-        <input type="text" id="register-username" name="username" placeholder="Ton pseudo" maxlength="20" required />
-        <input type="password" id="register-password" name="password" placeholder="Mot de passe" required />
-        <input type="password" id="register-confirm" name="confirm" placeholder="Confirmer le mot de passe" required />
-        <button type="submit">Créer le compte</button>
-        <p id="register-msg" hidden></p>
-      </form>
       <section id="rules">
         <h2>Règles du jeu</h2>
         <ul>
@@ -38,10 +41,11 @@
           <li><strong>Joker</strong> : choisis librement la prochaine couleur.</li>
           <li><strong>Joker +4</strong> : choisis la couleur, le joueur suivant pioche 4 cartes.</li>
           <li>Dis <strong>"UNO"</strong> quand il te reste 1 carte ! Si tu oublies et qu'un adversaire clique sur <strong>"Contre UNO"</strong> avant toi, tu pioches 2 cartes.</li>
-          <li>Le premier à poser toutes ses cartes gagne.</li>
+          <li>Le premier à avoir 0 carte en main gagne.</li>
         </ul>
       </section>
     </main>
+    <div class="bg-container" id="bg-container"></div>
     <script src="/public/js/index.js"></script>
   </body>
 </html>
