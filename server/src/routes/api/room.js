@@ -72,4 +72,23 @@ export default () => {
 
     createRoom(user.id, name, player, max_players);
   });
+
+  app.delete("/api/room", check_auth, function (req, res) {
+    res.setHeader("Content-Type", "application/json");
+    const data = req.body;
+    const room_id = data.room_id;
+
+    const room = getRoomById(room_id);
+    if (!room)
+      return res.status(404).json({ message: "Unable to remove the room." });
+
+    if (room.owner_id != res.locals.user.id)
+      return res
+        .status(401)
+        .json({ message: "You can't remove room that is not yours." });
+
+    deleteRoom(room_id);
+
+    res.status(200).json({ message: "Room removed." });
+  });
 };
