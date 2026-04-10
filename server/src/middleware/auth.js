@@ -1,4 +1,5 @@
 import { verify_token } from "../utils/auth";
+import db from "../utils/db";
 
 export function check_auth(req, res, next) {
   const auth = req.headers.authorization;
@@ -6,7 +7,12 @@ export function check_auth(req, res, next) {
     return res.status(401).json({ error: "Token manquant" });
   }
   try {
-    req.user = verify_token(auth.slice(7));
+    const decoded = verify_token(auth.slice(7));
+    const user = db.prepare("SELECT id, username FROM users WHERE id = ?").get(decoded.user_id);
+    if (!user) {
+      return res.status(401).json({ error: "Utilisateur introuvable" });
+    }
+    req.user = user;
     next();
   } catch {
     res.status(401).json({ error: "Token invalide ou expiré" });
