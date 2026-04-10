@@ -1,17 +1,28 @@
 import { Room } from "../../structures/game/room";
-import { rooms } from "../../../data/game_data";
+import db from "../../utils/db";
 
-export function newRoom(id, name, max_players) {
-  rooms.push(new Room(id, name, max_players));
+export function createRoom(ownerId, name, maxPlayers = 4) {
+  const stmt = db.prepare(
+    "INSERT INTO rooms (owner_id, name, max_players) VALUES (?, ?, ?)",
+  );
+  const info = stmt.run(ownerId, name, maxPlayers);
+  return getRoomById(info.lastInsertRowid);
 }
 
-export function removeRoom(room_id) {
-  const index = rooms.findIndex((room) => room_id === room.id);
+export function getRoomById(id) {
+  const stmt = db.prepare("SELECT * FROM rooms WHERE id = ?");
+  const row = stmt.get(id);
+  if (!row) return null;
+  const room = new Room(row.id, row.name, row.max_players);
+  return room;
+}
 
-  if (index != -1) {
-    rooms.splice(index, 1);
-    return true;
-  }
+export function getAllRooms() {
+  const stmt = db.prepare("SELECT * FROM rooms");
+  return stmt.all();
+}
 
-  return false;
+export function deleteRoom(id) {
+  const stmt = db.prepare("DELETE FROM rooms WHERE id = ?");
+  stmt.run(id);
 }

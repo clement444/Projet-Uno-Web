@@ -1,4 +1,7 @@
 # Users
+## Get info of current logged user
+GET /api/user
+
 ## Create a new user
 POST /api/user
 BODY:
@@ -26,17 +29,17 @@ HEADERS:
 GET /api/room
 HEADERS:
 - Authorization: Bearer (auth_token)
-BODY:
-{
-    "room_id"
-}
+QUERY PARAMS:
+- id = (room_id)
 
 ## Join room
 POST /api/room
 HEADERS:
 - Authorization: Bearer (auth_token)
-QUERY PARAMS:
-- join = (room_id)
+BODY:
+{
+    "join_id": room_id,
+}
 
 ## Create a new room
 POST /api/room

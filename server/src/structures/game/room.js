@@ -1,28 +1,62 @@
+import db from "../../utils/db";
+import { getRoomById } from "../../controllers/api/room";
+
 export class Room {
   id;
+  owner_id;
   name;
-  players;
   max_players;
 
   constructor(id, name, max_players) {
     this.id = id;
     this.name = name;
-    this.players = [];
     this.max_players = max_players;
   }
 
-  addPlayer(player) {
-    this.players.push(player);
+  changeOwnership(player_id) {
+    const room = getRoomById(this.id);
+    if (!room) return null;
+
+    const stmt = db.prepare("UPDATE rooms SET owner_id = ? WHERE id = ?");
+    stmt.run(newOwnerId, this.id);
+
+    return getRoomById(this.id);
+  }
+
+  addPlayer(player_id) {
+    const exists = db
+      .prepare("SELECT 1 FROM room_players WHERE room_id = ? AND user_id = ?")
+      .get(this.id, player_id);
+    if (exists) return;
+
+    // Insert player
+    db.prepare("INSERT INTO room_players (room_id, user_id) VALUES (?, ?)").run(
+      this.id,
+      player_id,
+    );
   }
 
   removePlayer(player_id) {
-    const index = this.players.findIndex((player) => player_id === player.id);
+    db.prepare(
+      "DELETE FROM room_players WHERE room_id = ? AND user_id = ?",
+    ).run(this.id, player_id);
+  }
 
-    if (index != -1) {
-      this.players.splice(index, 1);
-      return true;
-    }
+  getPlayer(player_id) {
+    const row = db
+      .prepare(
+        "SELECT user_id FROM room_players WHERE room_id = ? AND user_id = ?",
+      )
+      .get(this.id, player_id);
 
-    return false;
+    return row ? row.user_id : null;
+  }
+
+  getPlayers() {
+    const rows = db
+      .prepare("SELECT user_id FROM room_players WHERE room_id = ?")
+      .all(this.id);
+
+    return rows.map((r) => r.user_id);
   }
 }
