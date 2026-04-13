@@ -43,9 +43,11 @@ db.run(`
     last_card_played INTEGER,
     direction INTEGER DEFAULT 1,
     color INTEGER,
+    current_player_id INTEGER,
     room_id INTEGER NOT NULL,
     started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE
+    FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    FOREIGN KEY(current_player_id) REFERENCES users(id)
   );
 `);
 
@@ -66,12 +68,11 @@ db.run(`
   CREATE TABLE IF NOT EXISTS player_deck (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     card_id INTEGER NOT NULL,
-    color INTEGER NOT NULL CHECK(color BETWEEN 1 AND 4),
+    color INTEGER NOT NULL DEFAULT 0,
     party_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY(party_id) REFERENCES parties(id) ON DELETE CASCADE,
-    UNIQUE(party_id, user_id, card_id)
+    FOREIGN KEY(party_id) REFERENCES parties(id) ON DELETE CASCADE
   );
 `);
 
