@@ -7,24 +7,30 @@ export function createWebSocketServer(httpServer) {
   const wss = new WebSocketServer({ server: httpServer });
 
   wss.on("connection", (socket, req) => {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const token = url.searchParams.get("token");
+    const authHeader = req.headers["authorization"];
 
-    if (!token) {
-      socket.close(4001, "Token manquant");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      socket.close(4001, "No Authorization header provided.");
       return;
     }
 
+    const token = authHeader.split(" ")[1];
+
     try {
       const decoded = verify_token(token);
-      const user = db.prepare("SELECT id, username FROM users WHERE id = ?").get(decoded.user_id);
+
+      const user = db
+        .prepare("SELECT id, username FROM users WHERE id = ?")
+        .get(decoded.user_id);
+
       if (!user) {
-        socket.close(4001, "Utilisateur introuvable");
+        socket.close(4001, "User not found.");
         return;
       }
+
       socket.user = user;
     } catch {
-      socket.close(4001, "Token invalide ou expiré");
+      socket.close(4001, "Invalid token.");
       return;
     }
 
