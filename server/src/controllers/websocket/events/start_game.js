@@ -1,4 +1,4 @@
-import { broadcast } from "../broadcast.js";
+import { broadcast, sendToPlayer } from "../broadcast.js";
 import { getRoomById } from "../../api/room.js";
 import { createGame } from "../gameManager.js";
 import db from "../../../utils/db.js";
@@ -46,4 +46,12 @@ export function onStartGame(_message, socket, wss) {
     top_card: topCard,
     current_player_id: game.getCurrentPlayer(),
   });
+
+  for (const uid of playerIds) {
+    sendToPlayer(wss, uid, {
+      type: "hand_update",
+      hand: game.getHand(uid),
+      opponents: game.getOpponentState(uid),
+    });
+  }
 }
