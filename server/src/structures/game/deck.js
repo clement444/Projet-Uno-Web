@@ -31,4 +31,19 @@ export class Deck {
       [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
     }
   }
+
+  draw() {
+    return this.cards.pop();
+  }
+
+  refill(discardPile) {
+    const top = discardPile.pop();
+    this.cards = discardPile.splice(0);
+    discardPile.push(top);
+    this.shuffle();
+  }
+
+  get size() {
+    return this.cards.length;
+  }
 }
