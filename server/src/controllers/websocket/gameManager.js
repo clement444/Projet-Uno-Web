@@ -2,8 +2,8 @@ import { Game } from "../../structures/game/game.js";
 
 const games = new Map();
 
-export function createGame(room_id, playerIds) {
-  const game = new Game(playerIds);
+export function createGame(room_id, party_id, playerIds) {
+  const game = new Game(party_id, playerIds);
   games.set(room_id, game);
   return game;
 }
