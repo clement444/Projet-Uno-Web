@@ -17,7 +17,7 @@ if (isHost) {
   waitingMsg.hidden = true;
 }
 
-const ws = new WebSocket(`ws://${location.host}?token=${token}`);
+const ws = new WebSocket(`ws://${location.host}`, ["Authorization", token]);
 
 ws.addEventListener("open", () => {
   ws.send(
