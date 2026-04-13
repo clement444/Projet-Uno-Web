@@ -15,6 +15,8 @@ document.getElementById("logout-btn").addEventListener("click", () => {
 
 let rooms = [];
 let activePlayerFilter = "all";
+let currentPage = 0;
+const PAGE_SIZE = 10;
 
 async function loadRooms() {
   const res = await fetch("/api/room", {
@@ -45,13 +47,17 @@ function applyFilters() {
     return matchName && matchCount;
   });
 
+  currentPage = 0;
   renderRooms(filtered);
 }
 
 function renderRooms(filtered) {
   list.innerHTML = "";
 
-  filtered.forEach((room) => {
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const page = filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
+  page.forEach((room) => {
     const li = document.createElement("li");
     li.innerHTML = `
       <span class="room-name">${room.name}</span>
@@ -62,6 +68,43 @@ function renderRooms(filtered) {
   });
 
   noRoomsMsg.hidden = filtered.length > 0;
+  renderPagination(filtered, totalPages);
+}
+
+function renderPagination(filtered, totalPages) {
+  const existing = document.getElementById("pagination");
+  if (existing) existing.remove();
+  if (totalPages <= 1) return;
+
+  const nav = document.createElement("div");
+  nav.id = "pagination";
+
+  const previousButton = document.createElement("button");
+  previousButton.type = "button";
+  previousButton.textContent = "←";
+  previousButton.disabled = currentPage === 0;
+  previousButton.addEventListener("click", () => {
+    currentPage--;
+    renderRooms(filtered);
+  });
+
+  const pageInfo = document.createElement("span");
+  pageInfo.id = "page-info";
+  pageInfo.textContent = `${currentPage + 1} / ${totalPages}`;
+
+  const nextButton = document.createElement("button");
+  nextButton.type = "button";
+  nextButton.textContent = "→";
+  nextButton.disabled = currentPage === totalPages - 1;
+  nextButton.addEventListener("click", () => {
+    currentPage++;
+    renderRooms(filtered);
+  });
+
+  nav.appendChild(previousButton);
+  nav.appendChild(pageInfo);
+  nav.appendChild(nextButton);
+  list.after(nav);
 }
 
 searchInput.addEventListener("input", applyFilters);

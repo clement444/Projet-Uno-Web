@@ -62,7 +62,7 @@ header img {
     align-items: center;
     justify-content: space-between;
     width: 420px;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
     padding: 10px 16px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -299,6 +299,48 @@ form p {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 6px;
     padding: 2px 8px;
+}
+
+#pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+#pagination button {
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-family: "Inter", sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+#pagination button:hover:not(:disabled) {
+    background: rgba(124, 58, 237, 0.15);
+    color: white;
+    border-color: rgba(124, 58, 237, 0.4);
+}
+
+#pagination button:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+}
+
+#page-info {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.35);
+    min-width: 48px;
+    text-align: center;
 }
 
 #no-rooms-msg {
