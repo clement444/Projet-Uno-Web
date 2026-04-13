@@ -1,31 +1,27 @@
 import { Deck } from "./deck.js";
+import db from "../../utils/db.js";
 
 export class Game {
+  party_id;
   players;
-  hands;
   drawPile;
-  discardPile;
   currentIndex;
   direction;
-  topColor;
   unoPending;
 
-  constructor(playerIds) {
+  constructor(party_id, playerIds) {
+    this.party_id = party_id;
     this.players = [...playerIds];
-    this.hands = new Map();
     this.drawPile = new Deck();
-    this.discardPile = [];
     this.currentIndex = 0;
     this.direction = 1;
     this.unoPending = new Set();
 
-    for (const id of this.players) {
-      this.hands.set(id, []);
-    }
-
-    for (let i = 0; i < 7; i++) {
-      for (const id of this.players) {
-        this.hands.get(id).push(this.drawPile.draw());
+    for (const user_id of this.players) {
+      for (let i = 0; i < 7; i++) {
+        const card = this.drawPile.draw();
+        db.prepare("INSERT INTO player_deck (card_id, color, party_id, user_id) VALUES (?, ?, ?, ?)")
+          .run(card.id, card.color, party_id, user_id);
       }
     }
 
@@ -33,8 +29,9 @@ export class Game {
     do {
       firstCard = this.drawPile.draw();
     } while (firstCard.type !== "number");
-    this.discardPile.push(firstCard);
-    this.topColor = firstCard.color;
+
+    db.prepare("UPDATE parties SET last_card_played = ?, color = ?, direction = 1, current_player_id = ? WHERE id = ?")
+      .run(firstCard.id, firstCard.color, this.players[0], party_id);
   }
 
   getCurrentPlayer() {
@@ -42,55 +39,22 @@ export class Game {
   }
 
   getTopCard() {
-    return this.discardPile[this.discardPile.length - 1];
+    return db.prepare("SELECT last_card_played AS id, color FROM parties WHERE id = ?")
+      .get(this.party_id);
   }
 
-  getHandIds(player_id) {
-    return (this.hands.get(player_id) || []).map((c) => c.id);
+  getHand(player_id) {
+    return db.prepare("SELECT id, card_id, color FROM player_deck WHERE party_id = ? AND user_id = ?")
+      .all(this.party_id, player_id);
   }
 
   getOpponentState(exclude_id) {
     return this.players
       .filter((id) => id !== exclude_id)
-      .map((id) => ({ id, card_count: (this.hands.get(id) || []).length }));
-  }
-
-  isPlayable(card) {
-    if (card.type === "wild") return true;
-    return card.color === this.topColor || card.value === this.getTopCard().value;
-  }
-
-  nextTurn(skip = false) {
-    const step = skip ? 2 : 1;
-    this.currentIndex =
-      (this.currentIndex + step * this.direction + this.players.length) %
-      this.players.length;
-  }
-
-  reverse() {
-    this.direction *= -1;
-  }
-
-  drawCards(player_id, count) {
-    const drawn = [];
-    for (let i = 0; i < count; i++) {
-      if (this.drawPile.size === 0) this.drawPile.refill(this.discardPile);
-      const card = this.drawPile.draw();
-      if (card) {
-        this.hands.get(player_id).push(card);
-        drawn.push(card);
-      }
-    }
-    return drawn;
-  }
-
-  playCard(player_id, card_id) {
-    const hand = this.hands.get(player_id);
-    const index = hand.findIndex((c) => c.id === card_id);
-    if (index === -1) return null;
-    const card = hand.splice(index, 1)[0];
-    this.discardPile.push(card);
-    this.topColor = card.type === "wild" ? null : card.color;
-    return card;
+      .map((id) => ({
+        id,
+        card_count: db.prepare("SELECT COUNT(*) AS count FROM player_deck WHERE party_id = ? AND user_id = ?")
+          .get(this.party_id, id).count,
+      }));
   }
 }
