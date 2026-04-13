@@ -12,9 +12,8 @@ app.use("/public", express.static(path.join(__dirname, "../../client/public")));
 
 init_routes();
 
-app.use((err, req, res, next) => {
-  logger_main.error(err.stack || err.message);
-  res.status(500).json({ error: "Erreur interne du serveur" });
+app.use((err, res) => {
+  res.status(500).json({ message: "Internal Server Error" });
 });
 
 const httpServer = app.listen(port, () => {

@@ -43,7 +43,9 @@ export default () => {
           case "Room is full":
             return res.status(401).json({ message: e });
           default:
-            return res.status(500).json({ message: "Unable to join the room." });
+            return res
+              .status(500)
+              .json({ message: "Unable to join the room." });
         }
       }
     }
@@ -64,8 +66,11 @@ export default () => {
 
     const name = data.name;
     const max_players = data.max_players;
+
     const room = createRoom(user.id, name, max_players);
-    if (!room) return res.status(500).json({ message: "Unable to create the room." });
+    if (!room)
+      return res.status(500).json({ message: "Unable to create the room." });
+
     room.addPlayer(user.id);
     return res.status(201).json(room);
   });
