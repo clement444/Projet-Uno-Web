@@ -55,7 +55,10 @@ function renderRooms(filtered) {
   list.innerHTML = "";
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const page = filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+  const page = filtered.slice(
+    currentPage * PAGE_SIZE,
+    (currentPage + 1) * PAGE_SIZE,
+  );
 
   page.forEach((room) => {
     const li = document.createElement("li");
@@ -185,7 +188,7 @@ const svgLibrary = {
   colors: "/public/assets/cards/colors.svg",
   eye: "/public/assets/cards/eye.svg",
   block: "/public/assets/cards/block.svg",
-  change_orientation: "/public/assets/cards/change_orientation.svg",
+  change_direction: "/public/assets/cards/change_direction.svg",
   deck: "/public/assets/cards/deck.svg",
   fire: "/public/assets/cards/fire.svg",
   shuffle: "/public/assets/cards/shuffle.svg",
@@ -195,8 +198,15 @@ const svgLibrary = {
 
 const standardKeys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 const specialKeys = [
-  "colors", "eye", "block", "change_orientation",
-  "deck", "fire", "shuffle", "plus2", "plus4",
+  "colors",
+  "eye",
+  "block",
+  "change_direction",
+  "deck",
+  "fire",
+  "shuffle",
+  "plus2",
+  "plus4",
 ];
 
 const bgContainer = document.getElementById("bg-container");
@@ -242,13 +252,18 @@ async function generateBackground() {
       baseSequence.push(
         isSpecial
           ? {
-              svgKey: specialKeys[Math.floor(Math.random() * specialKeys.length)],
+              svgKey:
+                specialKeys[Math.floor(Math.random() * specialKeys.length)],
               color: specialCardColor,
             }
           : {
-              svgKey: standardKeys[Math.floor(Math.random() * standardKeys.length)],
-              color: standardColors[Math.floor(Math.random() * standardColors.length)],
-            }
+              svgKey:
+                standardKeys[Math.floor(Math.random() * standardKeys.length)],
+              color:
+                standardColors[
+                  Math.floor(Math.random() * standardColors.length)
+                ],
+            },
       );
     }
 
@@ -258,7 +273,9 @@ async function generateBackground() {
       baseSequence.forEach((cardData) => {
         const card = document.createElement("div");
         card.className = "card";
-        card.appendChild(createColoredSVG(svgCache[cardData.svgKey], cardData.color));
+        card.appendChild(
+          createColoredSVG(svgCache[cardData.svgKey], cardData.color),
+        );
         setDiv.appendChild(card);
       });
       track.appendChild(setDiv);

@@ -9,7 +9,6 @@ const port = 3000;
 
 app.use(express.json());
 app.use("/public", express.static(path.join(__dirname, "../../client/public")));
-app.use("/views", express.static(path.join(__dirname, "../../client/src/views")));
 
 init_routes();
 
