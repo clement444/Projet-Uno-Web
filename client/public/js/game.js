@@ -6,73 +6,106 @@ if (!token || !roomId) window.location.href = "/";
 
 document.getElementById("current-player-name").textContent = username;
 
+const CARD_ASSETS = [
+  "0","1","2","3","4","5","6","7","8","9",
+  "+2","+4","colors","block","change_direction",
+  "fire","eye","shuffle","deck"
+];
+const COLOR_BG = { 0: "#333", 1: "#F63A3A", 2: "#565EF5", 3: "#5DF55D", 4: "#F5D55D" };
+
 const ws = new WebSocket(`ws://${location.host}?token=${token}`);
-let myCardCount = 0;
-let pendingUno = {};
+let myId = null;
+const pendingUno = {};
 
 ws.addEventListener("open", () => {
-  ws.send(JSON.stringify({ type: "join_room", room_id: roomId, player_id: username, name: username }));
+  ws.send(JSON.stringify({ type: "join_room", room_id: parseInt(roomId) }));
 });
 
 ws.addEventListener("message", (event) => {
   const msg = JSON.parse(event.data);
 
-  if (msg.type === "card_played") updateCurrentCard(msg.card_id);
-  if (msg.type === "card_drawn") addCardToHand(msg.card_id);
-  if (msg.type === "hand_update") renderHand(msg.cards);
-  if (msg.type === "opponent_update") renderOpponents(msg.players);
-  if (msg.type === "uno_pending") {
-    pendingUno[msg.player_id] = true;
-    if (msg.player_id !== username) updateCounterUnoBtn();
+  if (msg.type === "game_started") {
+    renderTopCard(msg.top_card);
+    updateTurnIndicator(msg.current_player_id);
   }
-  if (msg.type === "uno_claimed") {
-    delete pendingUno[msg.player_id];
+  if (msg.type === "hand_update") {
+    if (msg.your_id) myId = msg.your_id;
+    renderHand(msg.hand);
+    renderOpponents(msg.opponents);
+  }
+  if (msg.type === "card_played") {
+    renderTopCard({ id: msg.card_id, color: msg.color });
+  }
+  if (msg.type === "turn") {
+    updateTurnIndicator(msg.player_id);
+  }
+  if (msg.type === "uno_declared") {
+    pendingUno[msg.player_id] = true;
     updateCounterUnoBtn();
+  }
+  if (msg.type === "game_over") {
+    alert(msg.winner_id === myId ? "Tu as gagné !" : `Partie terminée — gagnant : joueur ${msg.winner_id}`);
   }
 });
 
-function updateCurrentCard(cardId) {
-  document.getElementById("current-card").textContent = cardId;
+function renderTopCard(card) {
+  const el = document.getElementById("current-card");
+  el.innerHTML = "";
+  const img = document.createElement("img");
+  img.src = `/public/assets/cards/${CARD_ASSETS[card.id]}.svg`;
+  img.alt = CARD_ASSETS[card.id];
+  img.style.width = "80px";
+  img.style.borderRadius = "8px";
+  img.style.background = COLOR_BG[card.color] || "#333";
+  el.appendChild(img);
 }
 
-function renderHand(cards) {
+function updateTurnIndicator(player_id) {
+  const isMyTurn = player_id === myId;
+  document.getElementById("draw-btn").disabled = !isMyTurn;
+  document.getElementById("turn-indicator").textContent = isMyTurn
+    ? "C'est ton tour !"
+    : `Tour du joueur ${player_id}`;
+}
+
+function renderHand(hand) {
   const list = document.getElementById("player-cards");
   list.innerHTML = "";
-  myCardCount = cards.length;
-  cards.forEach((card) => {
+  hand.forEach((card) => {
     const li = document.createElement("li");
     const btn = document.createElement("button");
-    btn.textContent = card;
+    const img = document.createElement("img");
+    img.src = `/public/assets/cards/${CARD_ASSETS[card.card_id]}.svg`;
+    img.alt = CARD_ASSETS[card.card_id];
+    img.style.width = "60px";
+    btn.style.background = COLOR_BG[card.color] || "#333";
+    btn.style.border = "none";
+    btn.style.borderRadius = "8px";
+    btn.style.cursor = "pointer";
+    btn.style.padding = "4px";
+    btn.appendChild(img);
     btn.addEventListener("click", () => {
-      ws.send(JSON.stringify({ type: "play_card", room_id: roomId, player_id: username, card_id: card }));
+      const payload = { type: "play_card", card_id: card.card_id };
+      if ([11, 12].includes(card.card_id)) {
+        const color = parseInt(prompt("Choisis une couleur:\n1 = Rouge\n2 = Bleu\n3 = Vert\n4 = Jaune") || "1");
+        if (!color || color < 1 || color > 4) return;
+        payload.color = color;
+      }
+      ws.send(JSON.stringify(payload));
     });
     li.appendChild(btn);
     list.appendChild(li);
   });
-  updateUnoBtn();
+  updateUnoBtn(hand.length);
 }
 
-function addCardToHand(cardId) {
-  myCardCount++;
-  const list = document.getElementById("player-cards");
-  const li = document.createElement("li");
-  const btn = document.createElement("button");
-  btn.textContent = cardId;
-  btn.addEventListener("click", () => {
-    ws.send(JSON.stringify({ type: "play_card", room_id: roomId, player_id: username, card_id: cardId }));
-  });
-  li.appendChild(btn);
-  list.appendChild(li);
-  updateUnoBtn();
-}
-
-function renderOpponents(players) {
+function renderOpponents(opponents) {
   const list = document.getElementById("opponent-list");
   list.innerHTML = "";
-  players.filter((p) => p.id !== username).forEach((p) => {
+  opponents.forEach((p) => {
     const li = document.createElement("li");
     li.id = `opponent-${p.id}`;
-    li.textContent = `${p.name} - ${p.card_count} carte(s)`;
+    li.textContent = `Joueur ${p.id} — ${p.card_count} carte(s)`;
     list.appendChild(li);
   });
 }
@@ -80,27 +113,27 @@ function renderOpponents(players) {
 const unoBtn = document.getElementById("uno-btn");
 const counterUnoBtn = document.getElementById("counter-uno-btn");
 
-function updateUnoBtn() {
-  unoBtn.disabled = myCardCount !== 1;
+function updateUnoBtn(count) {
+  unoBtn.disabled = count !== 1;
 }
 
 function updateCounterUnoBtn() {
-  const hasPending = Object.keys(pendingUno).some((id) => id !== username);
+  const hasPending = Object.keys(pendingUno).some((id) => parseInt(id) !== myId);
   counterUnoBtn.disabled = !hasPending;
 }
 
 unoBtn.addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "uno", room_id: roomId, player_id: username }));
+  ws.send(JSON.stringify({ type: "uno" }));
   unoBtn.disabled = true;
 });
 
 counterUnoBtn.addEventListener("click", () => {
-  const target = Object.keys(pendingUno).find((id) => id !== username);
+  const target = Object.keys(pendingUno).map(Number).find((id) => id !== myId);
   if (!target) return;
-  ws.send(JSON.stringify({ type: "counter_uno", room_id: roomId, player_id: username, target_id: target }));
+  ws.send(JSON.stringify({ type: "counter_uno", target_id: target }));
   counterUnoBtn.disabled = true;
 });
 
 document.getElementById("draw-btn").addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "draw_card", room_id: roomId, player_id: username }));
+  ws.send(JSON.stringify({ type: "draw_card" }));
 });
