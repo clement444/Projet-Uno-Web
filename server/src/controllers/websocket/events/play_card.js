@@ -70,11 +70,37 @@ export function onPlayCard(message, socket, wss) {
     opponents: game.getOpponentState(player_id),
   });
 
-  if (game.getHand(player_id).length === 0) {
+  const remaining = game.getHand(player_id);
+  if (remaining.length === 0) {
     broadcast(wss, room_id, { type: "game_over", winner_id: player_id });
     return;
   }
+  if (remaining.length === 1) {
+    game.unoPending.add(player_id);
+  }
 
-  game.nextTurn();
+  let skip = false;
+  const nextIdx = (game.currentIndex + game.direction + game.players.length) % game.players.length;
+  const nextId = game.players[nextIdx];
+
+  if (card_id === 14) {
+    game.reverse();
+    broadcast(wss, room_id, { type: "direction_changed", direction: game.direction });
+  } else if (card_id === 13) {
+    skip = true;
+    broadcast(wss, room_id, { type: "player_skipped", player_id: nextId });
+  } else if (card_id === 10) {
+    skip = true;
+    game.drawCards(nextId, 2);
+    sendToPlayer(wss, nextId, { type: "hand_update", hand: game.getHand(nextId), opponents: game.getOpponentState(nextId) });
+    broadcast(wss, room_id, { type: "draw_forced", player_id: nextId, count: 2 });
+  } else if (card_id === 11) {
+    skip = true;
+    game.drawCards(nextId, 4);
+    sendToPlayer(wss, nextId, { type: "hand_update", hand: game.getHand(nextId), opponents: game.getOpponentState(nextId) });
+    broadcast(wss, room_id, { type: "draw_forced", player_id: nextId, count: 4 });
+  }
+
+  game.nextTurn(skip);
   broadcast(wss, room_id, { type: "turn", player_id: game.getCurrentPlayer() });
 }
