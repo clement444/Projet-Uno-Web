@@ -1,13 +1,11 @@
 export class Card {
   id;
   color;
-  value;
   type;
 
-  constructor(color, value) {
+  constructor(id, color = 0) {
+    this.id = id;
     this.color = color;
-    this.value = value;
-    this.type = color === "wild" ? "wild" : isNaN(value) ? "action" : "number";
-    this.id = color === "wild" ? value : `${color}_${value}`;
+    this.type = [11, 12].includes(id) ? "wild" : id >= 10 ? "action" : "number";
   }
 }
