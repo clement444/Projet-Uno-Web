@@ -4,72 +4,111 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Uno - Lobby</title>
-        <link rel="stylesheet" href="/public/css/lobby/lobby.css" />
+        <link rel="stylesheet" href="/views/lobby/lobby.css" />
     </head>
     <body>
-        <header style="text-align: center">
-            <a href="/"
-                ><img
+        <header>
+            <a href="/">
+                <img
                     src="/public/images/logo.png"
                     alt="Uno"
                     class="noselect"
-                    width="250"
                     draggable="false"
-            /></a>
-            <div id="user-display">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="user-icon"
-                >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path
-                        d="M12 2a5 5 0 1 1 -5 5l.005 -.217a5 5 0 0 1 4.995 -4.783z"
-                    />
-                    <path
-                        d="M14 14a5 5 0 0 1 5 5v1a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-1a5 5 0 0 1 5 -5h4z"
-                    />
-                </svg>
-
-                <span id="current-username" class="noselect"></span>
+                />
+            </a>
+            <div id="user-display" class="noselect">
+                <div id="user-info">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="user-icon"
+                    >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M12 2a5 5 0 1 1 -5 5l.005 -.217a5 5 0 0 1 4.995 -4.783z"
+                        />
+                        <path
+                            d="M14 14a5 5 0 0 1 5 5v1a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-1a5 5 0 0 1 5 -5h4z"
+                        />
+                    </svg>
+                    <span id="current-username"></span>
+                </div>
+                <button type="button" id="logout-btn">Se déconnecter</button>
             </div>
         </header>
         <main class="noselect">
-            <section id="create-room">
+            <section id="create-section">
+                <h2>Créer un salon</h2>
                 <form id="create-room-form">
                     <input
                         type="text"
                         id="room-name"
                         name="room-name"
-                        placeholder="Nom de la room"
+                        placeholder="Nom du salon"
                         maxlength="30"
                         required
                     />
-                    <button type="submit">Créer une room</button>
+                    <button type="submit">Créer</button>
                     <p id="create-room-msg" hidden></p>
                 </form>
             </section>
-            <section id="join-room">
-                <form id="join-room-form">
+            <section id="browse-section">
+                <h2>Rejoindre un salon</h2>
+                <div id="search-filters">
                     <input
                         type="text"
                         id="search-room"
-                        name="search-room"
-                        placeholder="Rechercher une room"
+                        placeholder="Rechercher par nom…"
                     />
-                    <button type="submit" id="join-room-btn" disabled>
-                        Rejoindre
-                    </button>
-                </form>
-            </section>
-            <section id="room-list" class="noselect" hidden>
-                <h1 style="padding-bottom: 0.3em">Salons</h1>
+                    <div id="player-filter" class="noselect">
+                        <span class="filter-label">Joueurs</span>
+                        <div id="filter-btns">
+                            <button
+                                type="button"
+                                class="filter-btn active"
+                                data-count="all"
+                            >
+                                Tous
+                            </button>
+                            <button
+                                type="button"
+                                class="filter-btn"
+                                data-count="1"
+                            >
+                                1
+                            </button>
+                            <button
+                                type="button"
+                                class="filter-btn"
+                                data-count="2"
+                            >
+                                2
+                            </button>
+                            <button
+                                type="button"
+                                class="filter-btn"
+                                data-count="3"
+                            >
+                                3
+                            </button>
+                            <button
+                                type="button"
+                                class="filter-btn"
+                                data-count="4"
+                            >
+                                4
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <ul id="rooms"></ul>
+                <p id="no-rooms-msg" hidden>Aucun salon disponible</p>
             </section>
         </main>
+        <div class="bg-container" id="bg-container"></div>
         <script src="/public/js/lobby.js"></script>
     </body>
 </html>
