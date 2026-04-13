@@ -18,7 +18,7 @@ db.run(`
   CREATE TABLE IF NOT EXISTS rooms (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     owner_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     max_players INTEGER NOT NULL CHECK(max_players > 0),
     FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE CASCADE
   );
