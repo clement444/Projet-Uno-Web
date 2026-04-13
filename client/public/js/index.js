@@ -116,15 +116,30 @@ const svgLibrary = {
   colors: "/public/assets/cards/colors.svg",
   eye: "/public/assets/cards/eye.svg",
   block: "/public/assets/cards/block.svg",
+  change_orientation: "/public/assets/cards/change_orientation.svg",
+  deck: "/public/assets/cards/deck.svg",
   fire: "/public/assets/cards/fire.svg",
+  shuffle: "/public/assets/cards/shuffle.svg",
+  plus2: "/public/assets/cards/+2.svg",
+  plus4: "/public/assets/cards/+4.svg",
 };
 
 const standardKeys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-const specialKeys = ["colors", "eye", "block", "fire"];
+const specialKeys = [
+  "colors",
+  "eye",
+  "block",
+  "change_orientation",
+  "deck",
+  "fire",
+  "shuffle",
+  "plus2",
+  "plus4",
+];
 
 const container = document.getElementById("bg-container");
 
-const numColumns = 10;
+const numColumns = 16;
 const cardsPerSet = 12;
 const numSetsPerColumn = 8;
 
