@@ -57,4 +57,49 @@ export class Game {
           .get(this.party_id, id).count,
       }));
   }
+
+  isPlayable(card) {
+    const top = this.getTopCard();
+    if ([11, 12].includes(card.card_id)) return true;
+    return card.color === top.color || card.card_id === top.id;
+  }
+
+  nextTurn(skip = false) {
+    const step = skip ? 2 : 1;
+    this.currentIndex =
+      (this.currentIndex + step * this.direction + this.players.length) %
+      this.players.length;
+    db.prepare("UPDATE parties SET current_player_id = ? WHERE id = ?")
+      .run(this.players[this.currentIndex], this.party_id);
+  }
+
+  reverse() {
+    this.direction *= -1;
+    db.prepare("UPDATE parties SET direction = ? WHERE id = ?")
+      .run(this.direction, this.party_id);
+  }
+
+  drawCards(player_id, count) {
+    const drawn = [];
+    for (let i = 0; i < count; i++) {
+      if (this.drawPile.size === 0) break;
+      const card = this.drawPile.draw();
+      db.prepare("INSERT INTO player_deck (card_id, color, party_id, user_id) VALUES (?, ?, ?, ?)")
+        .run(card.id, card.color, this.party_id, player_id);
+      drawn.push(card);
+    }
+    return drawn;
+  }
+
+  playCard(player_id, card_id, new_color = null) {
+    const row = db.prepare(
+      "SELECT id, card_id, color FROM player_deck WHERE party_id = ? AND user_id = ? AND card_id = ? LIMIT 1"
+    ).get(this.party_id, player_id, card_id);
+    if (!row) return null;
+    db.prepare("DELETE FROM player_deck WHERE id = ?").run(row.id);
+    const color = new_color ?? row.color;
+    db.prepare("UPDATE parties SET last_card_played = ?, color = ? WHERE id = ?")
+      .run(card_id, color, this.party_id);
+    return { id: row.card_id, color: row.color };
+  }
 }
