@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import init_routes from "./routes/init_routes";
 import { logger_main } from "./utils/logger";
-import { createWebSocketServer } from "./controllers/websocket/index";
+import { createWebSocketServer } from "./controllers/websocket/websocket_server";
 
 export const app = express();
 const port = 3000;
