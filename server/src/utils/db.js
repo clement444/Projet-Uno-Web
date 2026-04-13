@@ -75,4 +75,14 @@ db.run(`
   );
 `);
 
+db.run(
+  `CREATE INDEX IF NOT EXISTS idx_room_players_user ON room_players (user_id);`,
+);
+db.run(
+  `CREATE INDEX IF NOT EXISTS idx_party_players_user ON party_players (user_id);`,
+);
+db.run(
+  `CREATE INDEX IF NOT EXISTS idx_player_deck_user ON player_deck (user_id);`,
+);
+
 export default db;
