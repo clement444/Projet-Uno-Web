@@ -11,9 +11,10 @@ export class Room {
   name;
   max_players;
 
-  constructor(id, name, max_players) {
+  constructor(id, name, owner_id, max_players) {
     this.id = id;
     this.name = name;
+    this.owner_id = owner_id;
     this.max_players = max_players;
   }
 
@@ -48,7 +49,6 @@ export class Room {
     ).run(this.id, player_id);
 
     const player_count = this.getPlayers();
-    console.log(player_count);
     if (player_count == 0) {
       deleteRoom(this.id);
     }

@@ -12,11 +12,6 @@ document.getElementById("room-name").textContent = roomName || roomId;
 const startBtn = document.getElementById("start-btn");
 const waitingMsg = document.getElementById("waiting-msg");
 
-if (isHost) {
-  startBtn.hidden = false;
-  waitingMsg.hidden = true;
-}
-
 const ws = new WebSocket(`ws://${location.host}`, ["Authorization", token]);
 
 ws.addEventListener("open", () => {
@@ -74,6 +69,16 @@ function removePlayer(id) {
 function updatePlayerCount() {
   const count = document.getElementById("players").children.length;
   document.getElementById("player-count").textContent = `${count} / 4`;
+}
+
+function checkHost() {
+  if (isHost) {
+    startBtn.hidden = false;
+    waitingMsg.hidden = true;
+  } else {
+    startBtn.hidden = true;
+    waitingMsg.hidden = false;
+  }
 }
 
 document.getElementById("leave-btn").addEventListener("click", async () => {

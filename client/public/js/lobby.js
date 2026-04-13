@@ -124,16 +124,16 @@ document.querySelectorAll(".filter-btn").forEach((btn) => {
 });
 
 async function joinRoom(roomId, roomName) {
-  await fetch(`/api/room?join=${roomId}`, {
+  const room = await fetch(`/api/room?join=${roomId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-  });
-  localStorage.setItem("uno_room_id", roomId);
-  localStorage.setItem("uno_room_name", roomName);
-  localStorage.setItem("uno_is_host", "false");
+  }).then((res) => res.json());
+  localStorage.setItem("uno_room_id", room.id);
+  localStorage.setItem("uno_room_name", room.name);
+  localStorage.setItem("uno_is_host", `${room.isPlayerHost}`);
   window.location.href = "/room";
 }
 
