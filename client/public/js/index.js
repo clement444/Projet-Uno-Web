@@ -179,7 +179,7 @@ async function generateBackground() {
 
     const track = document.createElement("div");
     track.className = "card-track";
-    track.style.animationDuration = `${22 + (i % 4) * 2}s`;
+    track.style.animationDuration = `${50 + (i % 4) * 5}s`;
 
     const baseSequence = [];
     for (let c = 0; c < cardsPerSet; c++) {

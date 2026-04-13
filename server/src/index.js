@@ -9,10 +9,11 @@ const port = 3000;
 
 app.use(express.json());
 app.use("/public", express.static(path.join(__dirname, "../../client/public")));
+app.use("/views", express.static(path.join(__dirname, "../../client/src/views")));
 
 init_routes();
 
-app.use((err, res) => {
+app.use((err, _req, res, _next) => {
   res.status(500).json({ message: "Internal Server Error" });
 });
 
