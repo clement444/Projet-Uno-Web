@@ -75,6 +75,7 @@ db.run(`
   );
 `);
 
+// Indexing
 db.run(
   `CREATE INDEX IF NOT EXISTS idx_room_players_user ON room_players (user_id);`,
 );

@@ -68,12 +68,16 @@ export default () => {
     const name = body.name;
     const max_players = body.max_players;
 
-    const room = createRoom(user.id, name, max_players);
-    if (!room)
-      return res.status(500).json({ message: "Unable to create the room." });
+    try {
+      const room = createRoom(user.id, name, max_players);
+      if (!room)
+        return res.status(500).json({ message: "Unable to create the room." });
 
-    room.addPlayer(user.id);
-    return res.status(201).json(room);
+      room.addPlayer(user.id);
+      return res.status(201).json(room);
+    } catch (e) {
+      return res.status(400).json({ message: e });
+    }
   });
 
   app.delete("/api/room", check_auth, function (req, res) {
