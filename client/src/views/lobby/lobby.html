@@ -1,36 +1,75 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Uno - Lobby</title>
-  </head>
-  <body>
-    <header style="text-align: center">
-      <a href="/"><img src="/public/images/logo.png" alt="Uno" width="250" /></a>
-      <span id="current-username"></span>
-    </header>
-    <main>
-      <h1>Lobby</h1>
-      <section id="create-room">
-        <form id="create-room-form">
-          <input type="text" id="room-name" name="room-name" placeholder="Nom de la room" maxlength="30" required />
-          <button type="submit">Créer une room</button>
-          <p id="create-room-msg" hidden></p>
-        </form>
-      </section>
-      <section id="join-room">
-        <form id="join-room-form">
-          <input type="text" id="search-room" name="search-room" placeholder="Rechercher une room" />
-          <button type="submit" id="join-room-btn" disabled>Rejoindre</button>
-        </form>
-      </section>
-      <hr />
-      <section id="room-list">
-        <h2>Liste des rooms</h2>
-        <ul id="rooms"></ul>
-      </section>
-    </main>
-    <script src="/public/js/lobby.js"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Uno - Lobby</title>
+        <link rel="stylesheet" href="/public/css/lobby/lobby.css" />
+    </head>
+    <body>
+        <header style="text-align: center">
+            <a href="/"
+                ><img
+                    src="/public/images/logo.png"
+                    alt="Uno"
+                    class="noselect"
+                    width="250"
+                    draggable="false"
+            /></a>
+            <div id="user-display">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="user-icon"
+                >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path
+                        d="M12 2a5 5 0 1 1 -5 5l.005 -.217a5 5 0 0 1 4.995 -4.783z"
+                    />
+                    <path
+                        d="M14 14a5 5 0 0 1 5 5v1a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-1a5 5 0 0 1 5 -5h4z"
+                    />
+                </svg>
+
+                <span id="current-username" class="noselect"></span>
+            </div>
+        </header>
+        <main class="noselect">
+            <section id="create-room">
+                <form id="create-room-form">
+                    <input
+                        type="text"
+                        id="room-name"
+                        name="room-name"
+                        placeholder="Nom de la room"
+                        maxlength="30"
+                        required
+                    />
+                    <button type="submit">Créer une room</button>
+                    <p id="create-room-msg" hidden></p>
+                </form>
+            </section>
+            <section id="join-room">
+                <form id="join-room-form">
+                    <input
+                        type="text"
+                        id="search-room"
+                        name="search-room"
+                        placeholder="Rechercher une room"
+                    />
+                    <button type="submit" id="join-room-btn" disabled>
+                        Rejoindre
+                    </button>
+                </form>
+            </section>
+            <section id="room-list" class="noselect" hidden>
+                <h1 style="padding-bottom: 0.3em">Salons</h1>
+                <ul id="rooms"></ul>
+            </section>
+        </main>
+        <script src="/public/js/lobby.js"></script>
+    </body>
 </html>

@@ -1,6 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
-*, *::before, *::after {
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}
+
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -9,13 +20,13 @@
 html {
     width: 100vw;
     height: 100vh;
-    background-color: #0a0b0f;
+    background-color: #161616;
     overflow: hidden;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     color: white;
     display: flex;
     flex-direction: column;
@@ -23,7 +34,6 @@ body {
     width: 100vw;
     height: 100vh;
     overflow-y: auto;
-    background-color: #0a0b0f;
 }
 
 header {
@@ -39,17 +49,89 @@ header a {
 header img {
     width: 15em;
     margin: 40px 0 40px;
-    filter: drop-shadow(0 0 24px rgba(124, 58, 237, 0.5));
 }
 
 main {
     width: 420px;
+    padding-bottom: 3em;
     display: flex;
     flex-direction: column;
     gap: 16px;
     position: relative;
     z-index: 1;
-    padding-bottom: 48px;
+}
+
+#logged-in-section {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 28px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#logged-in-section p {
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 4px 0;
+}
+
+#logged-in-section strong {
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+#go-lobby-btn {
+    padding: 12px;
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: "Inter", sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        opacity 0.2s ease,
+        box-shadow 0.2s ease;
+    box-shadow: 0 4px 16px rgba(99, 62, 237, 0.35);
+    letter-spacing: 0.01em;
+}
+
+#go-lobby-btn:hover {
+    opacity: 0.9;
+    box-shadow: 0 6px 24px rgba(99, 62, 237, 0.5);
+}
+
+#go-lobby-btn:active {
+    opacity: 1;
+}
+
+#logout-btn {
+    padding: 12px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-family: "Inter", sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+    letter-spacing: 0.01em;
+}
+
+#logout-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 #auth-card {
@@ -81,10 +163,12 @@ main {
     border: none;
     cursor: pointer;
     border-radius: 8px;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
 }
 
 .tab:hover:not(.active) {
@@ -114,10 +198,13 @@ input {
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.05);
     color: white;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.9375rem;
     outline: none;
-    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 input::placeholder {
@@ -137,23 +224,23 @@ button[type="submit"] {
     color: white;
     border: none;
     border-radius: 10px;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    transition:
+        opacity 0.2s ease,
+        box-shadow 0.2s ease;
     box-shadow: 0 4px 16px rgba(99, 62, 237, 0.35);
     letter-spacing: 0.01em;
 }
 
 button[type="submit"]:hover {
     opacity: 0.9;
-    transform: translateY(-1px);
     box-shadow: 0 6px 24px rgba(99, 62, 237, 0.5);
 }
 
 button[type="submit"]:active {
-    transform: translateY(0);
     opacity: 1;
 }
 
@@ -246,7 +333,6 @@ form p {
     overflow: hidden;
     background-color: transparent;
     animation: fadeIn 0.5s ease-out forwards;
-    border-radius: 12px;
 }
 
 .card svg {
@@ -256,20 +342,38 @@ form p {
     transition: color 0.3s ease;
 }
 
-.down .card-track { animation: slideDown 20s linear infinite; }
-.up .card-track   { animation: slideUp   20s linear infinite; }
+.down .card-track {
+    animation: slideDown 20s linear infinite;
+}
+.up .card-track {
+    animation: slideUp 20s linear infinite;
+}
 
 @keyframes slideDown {
-    0%   { transform: translateY(-37.5%); }
-    100% { transform: translateY(-25%);   }
+    0% {
+        transform: translateY(-37.5%);
+    }
+    100% {
+        transform: translateY(-25%);
+    }
 }
 
 @keyframes slideUp {
-    0%   { transform: translateY(-25%);   }
-    100% { transform: translateY(-37.5%); }
+    0% {
+        transform: translateY(-25%);
+    }
+    100% {
+        transform: translateY(-37.5%);
+    }
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to   { opacity: 1; transform: scale(1);   }
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }

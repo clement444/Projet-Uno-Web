@@ -9,10 +9,22 @@
     <body>
         <header style="text-align: center">
             <a href="/"
-                ><img src="/public/images/logo.png" alt="Uno" width="250"
+                ><img
+                    draggable="false"
+                    src="/public/images/logo.png"
+                    alt="Uno"
+                    width="250"
+                    class="noselect"
             /></a>
         </header>
-        <main>
+        <main class="noselect">
+            <div id="logged-in-section" hidden>
+                <p>
+                    Connecté en tant que <strong id="logged-username"></strong>
+                </p>
+                <button type="button" id="go-lobby-btn">Aller au lobby</button>
+                <button type="button" id="logout-btn">Se déconnecter</button>
+            </div>
             <div id="auth-card">
                 <div id="auth-tabs">
                     <button type="button" id="tab-login" class="tab active">
