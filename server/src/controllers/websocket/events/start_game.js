@@ -1,5 +1,6 @@
 import { broadcast } from "../broadcast.js";
 import { getRoomById } from "../../api/room.js";
+import { createGame } from "../gameManager.js";
 import db from "../../../utils/db.js";
 
 export function onStartGame(_message, socket, wss) {
@@ -23,5 +24,26 @@ export function onStartGame(_message, socket, wss) {
     return;
   }
 
-  broadcast(wss, room_id, { type: "game_started", room_id });
+  const playerIds = room.getPlayers();
+  if (playerIds.length < 2) {
+    socket.send(JSON.stringify({ error: "Il faut au moins 2 joueurs" }));
+    return;
+  }
+
+  const party = db.prepare("INSERT INTO parties (room_id) VALUES (?)").run(room_id);
+  const party_id = party.lastInsertRowid;
+
+  for (const uid of playerIds) {
+    db.prepare("INSERT INTO party_players (party_id, user_id) VALUES (?, ?)").run(party_id, uid);
+  }
+
+  const game = createGame(room_id, party_id, playerIds);
+  const topCard = game.getTopCard();
+
+  broadcast(wss, room_id, {
+    type: "game_started",
+    room_id,
+    top_card: topCard,
+    current_player_id: game.getCurrentPlayer(),
+  });
 }
