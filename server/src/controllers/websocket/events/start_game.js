@@ -50,6 +50,7 @@ export function onStartGame(_message, socket, wss) {
   for (const uid of playerIds) {
     sendToPlayer(wss, uid, {
       type: "hand_update",
+      your_id: uid,
       hand: game.getHand(uid),
       opponents: game.getOpponentState(uid),
     });
