@@ -63,7 +63,7 @@ function renderRooms(filtered) {
       <span class="room-name">${room.name}</span>
       <span class="room-count">${room.player_count}/${room.max_players}</span>
     `;
-    li.addEventListener("click", () => joinRoom(room.id));
+    li.addEventListener("click", () => joinRoom(room.id, room.name));
     list.appendChild(li);
   });
 
@@ -120,7 +120,7 @@ document.querySelectorAll(".filter-btn").forEach((btn) => {
   });
 });
 
-async function joinRoom(roomId) {
+async function joinRoom(roomId, roomName) {
   await fetch(`/api/room?join=${roomId}`, {
     method: "POST",
     headers: {
@@ -129,6 +129,7 @@ async function joinRoom(roomId) {
     },
   });
   localStorage.setItem("uno_room_id", roomId);
+  localStorage.setItem("uno_room_name", roomName);
   localStorage.setItem("uno_is_host", "false");
   window.location.href = "/room";
 }
@@ -158,6 +159,7 @@ document
     msg.style.color = "#86efac";
     msg.hidden = false;
     localStorage.setItem("uno_room_id", data.id);
+    localStorage.setItem("uno_room_name", name);
     localStorage.setItem("uno_is_host", "true");
     setTimeout(() => {
       window.location.href = "/room";
