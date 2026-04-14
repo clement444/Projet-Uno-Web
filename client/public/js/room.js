@@ -18,17 +18,11 @@ if (isHost) {
   document.getElementById("bot-selector").hidden = false;
 }
 
-const ws = new WebSocket(`ws://${location.host}?token=${token}`);
+let roomOwnerId = null;
+const ws = new WebSocket(`ws://${location.host}`);
 
 ws.addEventListener("open", () => {
-  ws.send(
-    JSON.stringify({
-      type: "join_room",
-      room_id: parseInt(roomId),
-      player_id: username,
-      name: username,
-    }),
-  );
+  ws.send(JSON.stringify({ type: "join_room", room_id: parseInt(roomId), token }));
 });
 
 ws.addEventListener("message", (event) => {
@@ -36,10 +30,11 @@ ws.addEventListener("message", (event) => {
 
   if (msg.error) { console.error("[WS error]", msg.error); return; }
 
-  if (msg.type === "room_state") {
-    msg.players.forEach((p) => addPlayer(p.username, p.id));
+  if (msg.type === "room_data") {
+    roomOwnerId = msg.owner_id;
+    msg.players.forEach((p) => addPlayer(p.username, p.id, p.id === msg.owner_id));
   }
-  if (msg.type === "player_joined") addPlayer(msg.name, msg.player_id);
+  if (msg.type === "player_joined") addPlayer(msg.name, msg.player_id, msg.player_id === roomOwnerId);
   if (msg.type === "player_left") removePlayer(msg.player_id);
   if (msg.type === "player_disconnected") removePlayer(msg.player_id);
   if (msg.type === "game_started") window.location.href = "/game";
@@ -47,7 +42,7 @@ ws.addEventListener("message", (event) => {
   checkHost();
 });
 
-function addPlayer(name, id) {
+function addPlayer(name, id, isOwner = false) {
   const list = document.getElementById("players");
   if (document.getElementById(`player-${id}`)) return;
 
@@ -55,7 +50,7 @@ function addPlayer(name, id) {
   li.id = `player-${id}`;
 
   const isCurrentUser = name === username;
-  const isPlayerHost = isCurrentUser && isHost;
+  const isPlayerHost = isOwner;
   const initial = name.charAt(0).toUpperCase();
 
   li.innerHTML = `
