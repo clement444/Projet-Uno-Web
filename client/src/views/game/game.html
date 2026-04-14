@@ -11,6 +11,45 @@
         outline-offset: 3px;
         box-shadow: 0 0 14px rgba(255, 255, 255, 0.3);
       }
+
+      #color-picker {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        background: rgba(0, 0, 0, 0.78);
+        z-index: 100;
+      }
+      #color-picker p {
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+      }
+      #color-picker-btns {
+        display: flex;
+        gap: 20px;
+      }
+      #color-picker-btns button {
+        width: 88px;
+        height: 88px;
+        border-radius: 14px;
+        border: 3px solid rgba(255, 255, 255, 0.25);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        color: rgba(0, 0, 0, 0.65);
+        font-family: inherit;
+        transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+      }
+      #color-picker-btns button:hover {
+        transform: scale(1.12);
+        border-color: white;
+        box-shadow: 0 0 16px rgba(255, 255, 255, 0.35);
+      }
     </style>
   </head>
   <body>
