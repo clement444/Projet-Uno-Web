@@ -22,12 +22,14 @@ async function loadRooms() {
   const res = await fetch("/api/room", {
     headers: { Authorization: `Bearer ${token}` },
   });
+
   if (res.status === 401) {
     localStorage.removeItem("uno_token");
     localStorage.removeItem("uno_username");
     window.location.href = "/";
     return;
   }
+
   rooms = await res.json();
   applyFilters();
 }
@@ -169,6 +171,9 @@ document
     }, 3000);
   });
 
+setInterval(() => {
+  loadRooms();
+}, 5000);
 loadRooms();
 
 const standardColors = ["#F63A3A", "#565EF5", "#F5D55D", "#5DF55D"];
