@@ -1,6 +1,7 @@
 import { broadcast } from "../broadcast.js";
 import { getRoomById } from "../../api/room.js";
 import { getGame } from "../gameManager.js";
+import db from "../../../utils/db.js";
 
 export function onJoinRoom(message, socket, wss) {
   const room_id = parseInt(message.room_id);
@@ -16,6 +17,10 @@ export function onJoinRoom(message, socket, wss) {
   // Reconnexion depuis /game : le joueur est déjà dans la room, on renvoie l'état
   if (room.getPlayer(player_id)) {
     socket.room_id = room_id;
+    const players = db.prepare(
+      "SELECT u.id, u.username FROM room_players rp JOIN users u ON u.id = rp.user_id WHERE rp.room_id = ?"
+    ).all(room_id);
+    socket.send(JSON.stringify({ type: "room_state", players, owner_id: room.owner_id }));
     const game = getGame(room_id);
     if (game) {
       socket.send(JSON.stringify({
