@@ -53,12 +53,11 @@ db.run(`
   CREATE TABLE IF NOT EXISTS party_players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     party_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL UNIQUE,
     is_spectator INTEGER NOT NULL CHECK(is_spectator IN (0, 1)) DEFAULT 0,
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(party_id) REFERENCES parties(id) ON DELETE CASCADE,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE(party_id, user_id)
   );
 `);
 
