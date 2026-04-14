@@ -50,6 +50,18 @@
         border-color: white;
         box-shadow: 0 0 16px rgba(255, 255, 255, 0.35);
       }
+      .draw-highlight {
+        outline: 2px solid rgba(255, 255, 255, 0.85);
+        outline-offset: 3px;
+        box-shadow: 0 0 14px rgba(255, 255, 255, 0.4);
+      }
+      #no-card-hint {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        margin: 0;
+      }
     </style>
   </head>
   <body>
@@ -83,6 +95,7 @@
       </section>
       <section id="controls">
         <p id="turn-indicator"></p>
+        <p id="no-card-hint" hidden>Aucune carte jouable — piochez !</p>
         <div id="action-btns">
           <button id="uno-btn" hidden disabled>UNO !</button>
           <button id="counter-uno-btn" hidden disabled>Contre UNO</button>
