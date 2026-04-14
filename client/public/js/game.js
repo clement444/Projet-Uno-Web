@@ -17,6 +17,7 @@ const COLOR_BG = { 0: "#333", 1: "#F63A3A", 2: "#565EF5", 3: "#5DF55D", 4: "#F5D
 const ws = new WebSocket(`ws://${location.host}`);
 let myId = null;
 let isMyTurn = false;
+let currentPlayerId = null;
 const pendingUno = {};
 const playerNames = {};
 
@@ -33,12 +34,14 @@ ws.addEventListener("message", (event) => {
 
   if (msg.type === "game_started") {
     renderTopCard(msg.top_card);
-    updateTurnIndicator(msg.current_player_id);
+    currentPlayerId = msg.current_player_id;
+    if (myId !== null) updateTurnIndicator(currentPlayerId);
   }
   if (msg.type === "hand_update") {
     if (msg.your_id) {
       myId = msg.your_id;
       playerNames[myId] = username;
+      if (currentPlayerId !== null) updateTurnIndicator(currentPlayerId);
     }
     msg.opponents.forEach((p) => { playerNames[p.id] = p.username; });
     renderHand(msg.hand);
