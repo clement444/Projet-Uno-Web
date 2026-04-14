@@ -12,6 +12,12 @@ document.getElementById("room-name").textContent = roomName || roomId;
 const startBtn = document.getElementById("start-btn");
 const waitingMsg = document.getElementById("waiting-msg");
 
+if (isHost) {
+  startBtn.hidden = false;
+  waitingMsg.hidden = true;
+  document.getElementById("bot-selector").hidden = false;
+}
+
 const ws = new WebSocket(`ws://${location.host}?token=${token}`);
 
 ws.addEventListener("open", () => {
@@ -28,6 +34,9 @@ ws.addEventListener("open", () => {
 ws.addEventListener("message", (event) => {
   const msg = JSON.parse(event.data);
 
+  if (msg.type === "room_state") {
+    msg.players.forEach((p) => addPlayer(p.username, p.id));
+  }
   if (msg.type === "player_joined") addPlayer(msg.name, msg.player_id);
   if (msg.type === "player_left") removePlayer(msg.player_id);
   if (msg.type === "player_disconnected") removePlayer(msg.player_id);
