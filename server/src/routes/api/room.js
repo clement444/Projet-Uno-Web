@@ -16,17 +16,28 @@ export default () => {
     const room_id = req.id;
 
     if (req.query.mine) {
-      const room = getAllRooms().find((r) => r.owner_id === req.user.id) ?? null;
-      return res.status(200).json(room);
+      const room =
+        getAllRooms().find((r) => r.owner_id === req.user.id) ?? null;
+      return res.status(200).json({
+        id: room.id,
+        owner_id: room.owner_id,
+        name: room.name,
+        max_players: room.max_players,
+      });
     }
 
     if (room_id) {
       const room = getRoomById(room_id);
 
       if (room.length < 1) {
-        res.status(404).json({ message: "No room for this id." });
+        res.status(404).json({ message: "Salon inexistant." });
       } else {
-        res.status(200).json(room);
+        res.status(200).json({
+          id: room.id,
+          owner_id: room.owner_id,
+          name: room.name,
+          max_players: room.max_players,
+        });
       }
     } else {
       res.json(getAllRooms());
@@ -45,7 +56,9 @@ export default () => {
       const room_id = data.join;
       const room = getRoomById(room_id);
       if (!room)
-        return res.status(404).json({ message: "Unable to join room." });
+        return res
+          .status(404)
+          .json({ message: "Impossible de rejoindre le salon." });
 
       try {
         const isInARoom = isPlayerInARoom(user.id);
@@ -69,16 +82,8 @@ export default () => {
           isPlayerHost: room.owner_id == user.id,
         });
       } catch (e) {
-        switch (e) {
-          case "Already in room":
-            return res.status(400).json({ message: e });
-          case "Room is full":
-            return res.status(401).json({ message: e });
-          default:
-            return res
-              .status(500)
-              .json({ message: "Unable to join the room." });
-        }
+        const err = JSON.parse(e.message);
+        return res.status(err.status_code).json({ message: err.message });
       }
     }
 
@@ -86,11 +91,15 @@ export default () => {
       const room_id = data.leave;
       const room = getRoomById(room_id);
       if (!room)
-        return res.status(404).json({ message: "Unable to leave room." });
+        return res
+          .status(404)
+          .json({ message: "Impossible de quitter le salon." });
 
       const isInRoom = room.getPlayer(user.id);
       if (!isInRoom)
-        return res.status(400).json({ message: "You are not in the room." });
+        return res
+          .status(400)
+          .json({ message: "Vous n'êtes pas dans le salon." });
 
       room.removePlayer(user.id);
       return res.status(200).json({
@@ -100,13 +109,18 @@ export default () => {
     }
 
     if (isPlayerInARoom(user.id)) {
-      return res.status(400).json({ message: "Vous avez déjà un salon actif. Supprimez-le avant d'en créer un nouveau." });
+      return res.status(400).json({
+        message:
+          "Vous avez déjà un salon actif. Supprimez-le avant d'en créer un nouveau.",
+      });
     }
 
     try {
       const room = createRoom(user.id, body.name, body.max_players);
       if (!room)
-        return res.status(500).json({ message: "Impossible de créer le salon." });
+        return res
+          .status(500)
+          .json({ message: "Impossible de créer le salon." });
 
       room.addPlayer(user.id);
       return res.status(201).json({
@@ -130,15 +144,17 @@ export default () => {
 
     const room = getRoomById(room_id);
     if (!room)
-      return res.status(404).json({ message: "Unable to remove the room." });
+      return res
+        .status(404)
+        .json({ message: "Impossible de supprimer le salon." });
 
     if (room.owner_id != req.user.id)
       return res
         .status(401)
-        .json({ message: "You can't remove room that is not yours." });
+        .json({ message: "Vous n'êtes pas l'hôte du salon." });
 
     deleteRoom(room_id);
 
-    res.status(200).json({ message: "Room removed." });
+    res.status(200).json({ message: "Salon supprimé." });
   });
 };

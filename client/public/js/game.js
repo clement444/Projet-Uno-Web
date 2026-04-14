@@ -21,7 +21,14 @@ const pendingUno = {};
 const playerNames = {};
 
 ws.addEventListener("open", () => {
-  ws.send(JSON.stringify({ type: "join_room", room_id: parseInt(roomId) }));
+  ws.send(
+    JSON.stringify({
+      type: "join_room",
+      room_id: roomId,
+      player_id: username,
+      name: username,
+    }),
+  );
 });
 
 ws.addEventListener("message", (event) => {
@@ -124,13 +131,14 @@ function renderHand(hand) {
     img.alt = CARD_ASSETS[card.card_id];
     btn.appendChild(img);
     btn.addEventListener("click", () => {
-      const payload = { type: "play_card", card_id: card.card_id };
-      if ([11, 12].includes(card.card_id)) {
-        const color = parseInt(prompt("Choisis une couleur:\n1 = Rouge\n2 = Bleu\n3 = Vert\n4 = Jaune") || "1");
-        if (!color || color < 1 || color > 4) return;
-        payload.color = color;
-      }
-      ws.send(JSON.stringify(payload));
+      ws.send(
+        JSON.stringify({
+          type: "play_card",
+          room_id: roomId,
+          player_id: username,
+          card_id: card,
+        }),
+      );
     });
     li.appendChild(btn);
     list.appendChild(li);
@@ -138,15 +146,38 @@ function renderHand(hand) {
   updateUnoBtn(hand.length);
 }
 
-function renderOpponents(opponents) {
+function addCardToHand(cardId) {
+  myCardCount++;
+  const list = document.getElementById("player-cards");
+  const li = document.createElement("li");
+  const btn = document.createElement("button");
+  btn.textContent = cardId;
+  btn.addEventListener("click", () => {
+    ws.send(
+      JSON.stringify({
+        type: "play_card",
+        room_id: roomId,
+        player_id: username,
+        card_id: cardId,
+      }),
+    );
+  });
+  li.appendChild(btn);
+  list.appendChild(li);
+  updateUnoBtn();
+}
+
+function renderOpponents(players) {
   const list = document.getElementById("opponent-list");
   list.innerHTML = "";
-  opponents.forEach((p) => {
-    const li = document.createElement("li");
-    li.id = `opponent-${p.id}`;
-    li.textContent = `${p.username ?? `Joueur ${p.id}`} — ${p.card_count} carte(s)`;
-    list.appendChild(li);
-  });
+  players
+    .filter((p) => p.id !== username)
+    .forEach((p) => {
+      const li = document.createElement("li");
+      li.id = `opponent-${p.id}`;
+      li.textContent = `${p.name} - ${p.card_count} carte(s)`;
+      list.appendChild(li);
+    });
 }
 
 const unoBtn = document.getElementById("uno-btn");
@@ -162,19 +193,30 @@ function updateCounterUnoBtn() {
 }
 
 unoBtn.addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "uno" }));
+  ws.send(
+    JSON.stringify({ type: "uno", room_id: roomId, player_id: username }),
+  );
   unoBtn.disabled = true;
 });
 
 counterUnoBtn.addEventListener("click", () => {
   const target = Object.keys(pendingUno).map(Number).find((id) => id !== myId);
   if (!target) return;
-  ws.send(JSON.stringify({ type: "counter_uno", target_id: target }));
+  ws.send(
+    JSON.stringify({
+      type: "counter_uno",
+      room_id: roomId,
+      player_id: username,
+      target_id: target,
+    }),
+  );
   counterUnoBtn.disabled = true;
 });
 
 document.getElementById("draw-btn").addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "draw_card" }));
+  ws.send(
+    JSON.stringify({ type: "draw_card", room_id: roomId, player_id: username }),
+  );
 });
 
 document.getElementById("leave-btn").addEventListener("click", () => {

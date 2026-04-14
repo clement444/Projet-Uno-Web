@@ -156,8 +156,7 @@ document
     });
     const data = await res.json();
     if (!res.ok) {
-      msg.textContent = data.message || data.error;
-      msg.style.color = "#f87171";
+      msg.textContent = data.message;
       msg.hidden = false;
       return;
     }
@@ -172,6 +171,11 @@ document
     }, 3000);
   });
 
+setInterval(() => {
+  loadRooms();
+}, 5000);
+loadRooms();
+
 function showMyRoom() {
   const storedRoomId = localStorage.getItem("uno_room_id");
   if (!storedRoomId) return;
@@ -185,7 +189,8 @@ function showMyRoom() {
   }
 
   document.getElementById("my-room-name").textContent = myRoom.name;
-  document.getElementById("my-room-count").textContent = `${myRoom.player_count} / ${myRoom.max_players}`;
+  document.getElementById("my-room-count").textContent =
+    `${myRoom.player_count} / ${myRoom.max_players}`;
   document.getElementById("my-room-section").hidden = false;
 
   document.getElementById("my-room-btn").addEventListener("click", () => {
