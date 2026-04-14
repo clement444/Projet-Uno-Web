@@ -4,14 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Uno - Partie</title>
+    <link rel="stylesheet" href="/public/css/game/game.css" />
   </head>
   <body>
-    <div id="notification" style="display:none"></div>
-    <header style="text-align: center">
-      <a href="/"><img src="/public/images/logo.png" alt="Uno" width="250" /></a>
-      <span id="room-name"></span>
-      <span id="current-player-name"></span>
-      <span id="direction-indicator"></span>
+    <div id="notification"></div>
+    <header>
+      <a href="/"><img src="/public/images/logo.png" alt="Uno" /></a>
+      <div id="game-info">
+        <span id="room-name"></span>
+        <span id="current-player-name"></span>
+        <span id="direction-indicator"></span>
+      </div>
     </header>
     <main>
       <section id="opponents">
@@ -19,24 +22,26 @@
       </section>
       <section id="board">
         <div id="draw-pile">
-          <button id="draw-btn">Piocher</button>
+          <p class="pile-label">Pioche</p>
+          <button id="draw-btn" disabled>
+            <img src="/public/assets/cards/uno_recto.svg" alt="Pioche" />
+          </button>
         </div>
         <div id="discard-pile">
+          <p class="pile-label">Défausse</p>
           <div id="current-card"></div>
         </div>
       </section>
       <section id="hand">
         <ul id="player-cards"></ul>
       </section>
-      <section id="turn-section">
+      <section id="controls">
         <p id="turn-indicator"></p>
-      </section>
-      <section id="uno-actions">
-        <button id="uno-btn" disabled>UNO !</button>
-        <button id="counter-uno-btn" disabled>Contre UNO</button>
-      </section>
-      <section id="leave-section">
-        <button id="leave-btn">Quitter la partie</button>
+        <div id="action-btns">
+          <button id="uno-btn" disabled>UNO !</button>
+          <button id="counter-uno-btn" disabled>Contre UNO</button>
+          <button id="leave-btn">Quitter</button>
+        </div>
       </section>
     </main>
     <script src="/public/js/game.js"></script>

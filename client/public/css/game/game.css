@@ -1,0 +1,290 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+  background: #161616;
+  color: white;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Notification toast ── */
+#notification {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  z-index: 200;
+  display: none;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 24px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+header img {
+  height: 44px;
+}
+#game-info {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+#room-name {
+  font-weight: 600;
+  color: white;
+}
+#direction-indicator {
+  font-size: 18px;
+}
+
+/* ── Main layout ── */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 10px 20px 6px;
+  gap: 10px;
+}
+
+/* ── Opponents ── */
+#opponents {
+  flex-shrink: 0;
+}
+#opponent-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  list-style: none;
+  justify-content: center;
+}
+.opponent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.opponent-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.opponent-card-stack {
+  position: relative;
+  height: 64px;
+  min-width: 44px;
+}
+.card-back-mini {
+  position: absolute;
+  width: 42px;
+  height: 62px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+}
+.card-back-mini img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.card-count-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 2px 8px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── Board ── */
+#board {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 56px;
+  flex-shrink: 0;
+}
+.pile-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* Draw pile — bouton = carte dos */
+#draw-btn {
+  width: 88px;
+  height: 132px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  box-shadow:
+    4px 4px 0 rgba(255, 255, 255, 0.07),
+    8px 8px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 0.15s;
+  display: block;
+}
+#draw-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+#draw-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+#draw-btn img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Discard pile */
+#current-card {
+  width: 88px;
+  height: 132px;
+}
+.card-face-pile {
+  width: 88px;
+  height: 132px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+.card-face-pile img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  mix-blend-mode: multiply;
+}
+
+/* ── Hand ── */
+#hand {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  min-height: 0;
+}
+#player-cards {
+  display: flex;
+  list-style: none;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 6px 4px 10px;
+  align-items: flex-end;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+.hand-slot {
+  flex-shrink: 0;
+}
+.card-face {
+  width: 66px;
+  height: 99px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: transform 0.15s;
+  padding: 0;
+  display: block;
+}
+.card-face:hover:not(:disabled) {
+  transform: translateY(-12px);
+}
+.card-face:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.card-face img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  mix-blend-mode: multiply;
+}
+
+/* ── Controls ── */
+#controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 8px;
+  flex-shrink: 0;
+  gap: 12px;
+}
+#turn-indicator {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  flex: 1;
+}
+#action-btns {
+  display: flex;
+  gap: 8px;
+}
+#action-btns button {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  color: white;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#action-btns button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+#action-btns button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+#uno-btn:not(:disabled) {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+#leave-btn {
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+#leave-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.12) !important;
+}

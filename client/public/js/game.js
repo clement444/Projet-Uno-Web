@@ -88,13 +88,14 @@ ws.addEventListener("message", (event) => {
 function renderTopCard(card) {
   const el = document.getElementById("current-card");
   el.innerHTML = "";
+  const wrapper = document.createElement("div");
+  wrapper.className = "card-face-pile";
+  wrapper.style.background = COLOR_BG[card.color] || "#333";
   const img = document.createElement("img");
   img.src = `/public/assets/cards/${CARD_ASSETS[card.id]}.svg`;
   img.alt = CARD_ASSETS[card.id];
-  img.style.width = "80px";
-  img.style.borderRadius = "8px";
-  img.style.background = COLOR_BG[card.color] || "#333";
-  el.appendChild(img);
+  wrapper.appendChild(img);
+  el.appendChild(wrapper);
 }
 
 function updateTurnIndicator(player_id) {
@@ -113,16 +114,14 @@ function renderHand(hand) {
   list.innerHTML = "";
   hand.forEach((card) => {
     const li = document.createElement("li");
+    li.className = "hand-slot";
     const btn = document.createElement("button");
+    btn.className = "card-face";
+    btn.style.background = COLOR_BG[card.color] || "#333";
+    btn.disabled = !isMyTurn;
     const img = document.createElement("img");
     img.src = `/public/assets/cards/${CARD_ASSETS[card.card_id]}.svg`;
     img.alt = CARD_ASSETS[card.card_id];
-    img.style.width = "60px";
-    btn.style.background = COLOR_BG[card.color] || "#333";
-    btn.style.border = "none";
-    btn.style.borderRadius = "8px";
-    btn.style.cursor = "pointer";
-    btn.style.padding = "4px";
     btn.appendChild(img);
     btn.addEventListener("click", () => {
       const payload = { type: "play_card", card_id: card.card_id };
