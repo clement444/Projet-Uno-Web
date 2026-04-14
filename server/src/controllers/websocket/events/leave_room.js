@@ -1,6 +1,5 @@
 import { broadcast } from "../broadcast.js";
 import { getRoomById } from "../../api/room.js";
-import db from "../../../utils/db.js";
 
 export function onLeaveRoom(_message, socket, wss) {
   const room_id = socket.room_id;
@@ -24,7 +23,6 @@ export function onLeaveRoom(_message, socket, wss) {
   }
 
   room.removePlayer(player_id);
-  db.prepare("DELETE FROM room_players WHERE room_id = ? AND user_id = ?").run(room_id, player_id);
   socket.room_id = null;
   broadcast(wss, room_id, { type: "player_left", room_id, player_id, name });
 }
