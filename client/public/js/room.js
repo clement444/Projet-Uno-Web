@@ -77,6 +77,7 @@ function checkHost() {
   if (isHost) {
     startBtn.hidden = false;
     waitingMsg.hidden = true;
+    document.getElementById("bot-selector").hidden = false;
   } else {
     startBtn.hidden = true;
     waitingMsg.hidden = false;
@@ -104,13 +105,8 @@ document.getElementById("leave-btn").addEventListener("click", async () => {
 });
 
 startBtn.addEventListener("click", () => {
-  ws.send(
-    JSON.stringify({
-      type: "start_game",
-      room_id: roomId,
-      player_id: username,
-    }),
-  );
+  const botCount = parseInt(document.getElementById("bot-count").value) || 0;
+  ws.send(JSON.stringify({ type: "start_game", room_id: roomId, player_id: username, bot_count: botCount }));
 });
 
 const standardColors = ["#F63A3A", "#565EF5", "#F5D55D", "#5DF55D"];
