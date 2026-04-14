@@ -40,6 +40,14 @@
             </div>
         </header>
         <main class="noselect">
+            <section id="my-room-section" hidden>
+                <h2>Vous êtes perdus ?</h2>
+                <div id="my-room-item">
+                    <span id="my-room-name" class="room-name"></span>
+                    <span id="my-room-count" class="room-count"></span>
+                </div>
+                <button type="button" id="my-room-btn">Retourner dans le salon</button>
+            </section>
             <section id="create-section">
                 <h2>Créer un salon</h2>
                 <form id="create-room-form">
@@ -56,7 +64,10 @@
                 </form>
             </section>
             <section id="browse-section">
-                <h2>Rejoindre un salon</h2>
+                <div id="browse-header">
+                    <h2>Rejoindre un salon</h2>
+                    <span id="room-total"></span>
+                </div>
                 <div id="search-filters">
                     <input
                         type="text"

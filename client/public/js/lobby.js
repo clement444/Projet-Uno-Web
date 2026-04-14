@@ -29,6 +29,7 @@ async function loadRooms() {
     return;
   }
   rooms = await res.json();
+  document.getElementById("room-total").textContent = rooms.length;
   applyFilters();
 }
 
@@ -153,7 +154,7 @@ document
     });
     const data = await res.json();
     if (!res.ok) {
-      msg.textContent = data.error;
+      msg.textContent = data.message || data.error;
       msg.style.color = "#f87171";
       msg.hidden = false;
       return;
@@ -169,7 +170,31 @@ document
     }, 3000);
   });
 
-loadRooms();
+function showMyRoom() {
+  const storedRoomId = localStorage.getItem("uno_room_id");
+  if (!storedRoomId) return;
+
+  const myRoom = rooms.find((r) => r.id == storedRoomId);
+  if (!myRoom) {
+    localStorage.removeItem("uno_room_id");
+    localStorage.removeItem("uno_room_name");
+    localStorage.removeItem("uno_is_host");
+    return;
+  }
+
+  document.getElementById("my-room-name").textContent = myRoom.name;
+  document.getElementById("my-room-count").textContent = `${myRoom.player_count} / ${myRoom.max_players}`;
+  document.getElementById("my-room-section").hidden = false;
+
+  document.getElementById("my-room-btn").addEventListener("click", () => {
+    localStorage.setItem("uno_room_id", myRoom.id);
+    localStorage.setItem("uno_room_name", myRoom.name);
+    localStorage.setItem("uno_is_host", "true");
+    window.location.href = "/room";
+  });
+}
+
+loadRooms().then(showMyRoom);
 
 const standardColors = ["#F63A3A", "#565EF5", "#F5D55D", "#5DF55D"];
 const specialCardColor = "#F8F9FA";
