@@ -170,6 +170,11 @@ document.getElementById("draw-btn").addEventListener("click", () => {
   ws.send(JSON.stringify({ type: "draw_card" }));
 });
 
+document.getElementById("leave-btn").addEventListener("click", () => {
+  ws.send(JSON.stringify({ type: "leave_room" }));
+  window.location.href = "/";
+});
+
 function showNotification(text) {
   const el = document.getElementById("notification");
   el.textContent = text;
