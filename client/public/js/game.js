@@ -139,17 +139,55 @@ function renderHand(hand) {
 }
 
 
-function renderOpponents(players) {
+const opponentData = new Map();
+
+function renderOpponents(opponents) {
+  document.getElementById("opponent-list").innerHTML = "";
+  opponentData.clear();
+  opponents.forEach((p) => {
+    opponentData.set(p.id, { username: p.username, card_count: p.card_count });
+    renderOpponent(p.id);
+  });
+}
+
+function renderOpponent(id) {
+  const data = opponentData.get(id);
+  if (!data) return;
   const list = document.getElementById("opponent-list");
-  list.innerHTML = "";
-  players
-    .filter((p) => p.id !== username)
-    .forEach((p) => {
-      const li = document.createElement("li");
-      li.id = `opponent-${p.id}`;
-      li.textContent = `${p.name} - ${p.card_count} carte(s)`;
-      list.appendChild(li);
-    });
+  let li = document.getElementById(`opponent-${id}`);
+  if (!li) {
+    li = document.createElement("li");
+    li.id = `opponent-${id}`;
+    li.className = "opponent";
+    list.appendChild(li);
+  }
+  li.innerHTML = "";
+
+  const nameEl = document.createElement("span");
+  nameEl.className = "opponent-name";
+  nameEl.textContent = data.username;
+
+  const stack = document.createElement("div");
+  stack.className = "opponent-card-stack";
+  const show = Math.min(data.card_count, 8);
+  stack.style.width = `${Math.max(42, 42 + (show - 1) * 16)}px`;
+  for (let i = 0; i < show; i++) {
+    const card = document.createElement("div");
+    card.className = "card-back-mini";
+    card.style.left = `${i * 16}px`;
+    const img = document.createElement("img");
+    img.src = "/public/assets/cards/uno_recto.svg";
+    card.appendChild(img);
+    stack.appendChild(card);
+  }
+
+  const badge = document.createElement("span");
+  badge.className = "card-count-badge";
+  badge.textContent = data.card_count;
+
+  li.appendChild(nameEl);
+  li.appendChild(stack);
+  li.appendChild(badge);
 }
 
 const unoBtn = document.getElementById("uno-btn");
@@ -192,12 +230,11 @@ function showNotification(text) {
   setTimeout(() => { el.style.display = "none"; }, 3000);
 }
 
-function updateOpponentCount(player_id, addedCount) {
-  const el = document.getElementById(`opponent-${player_id}`);
-  if (!el) return;
-  const match = el.textContent.match(/(\d+) carte/);
-  const current = match ? parseInt(match[1]) : 0;
-  el.textContent = el.textContent.replace(/\d+ carte\(s\)/, `${current + addedCount} carte(s)`);
+function updateOpponentCount(player_id, delta) {
+  const data = opponentData.get(player_id);
+  if (!data) return;
+  data.card_count = Math.max(0, data.card_count + delta);
+  renderOpponent(player_id);
 }
 
 function updateDirectionIndicator(direction) {
