@@ -18,6 +18,7 @@ const ws = new WebSocket(`ws://${location.host}`);
 let myId = null;
 let isMyTurn = false;
 let currentPlayerId = null;
+let topCard = null;
 const pendingUno = {};
 const playerNames = {};
 
@@ -33,6 +34,7 @@ ws.addEventListener("message", (event) => {
   const msg = JSON.parse(event.data);
 
   if (msg.type === "game_started") {
+    topCard = msg.top_card;
     renderTopCard(msg.top_card);
     currentPlayerId = msg.current_player_id;
     if (myId !== null) updateTurnIndicator(currentPlayerId);
@@ -48,7 +50,8 @@ ws.addEventListener("message", (event) => {
     renderOpponents(msg.opponents);
   }
   if (msg.type === "card_played") {
-    renderTopCard({ id: msg.card_id, color: msg.color });
+    topCard = { id: msg.card_id, color: msg.color };
+    renderTopCard(topCard);
     if (msg.player_id !== myId) updateOpponentCount(msg.player_id, -1);
   }
   if (msg.type === "turn") {
@@ -115,6 +118,12 @@ function updateTurnIndicator(player_id) {
   document.querySelectorAll("#player-cards button").forEach((btn) => {
     btn.disabled = !isMyTurn;
   });
+}
+
+function isCardPlayable(card) {
+  if (!topCard) return false;
+  if ([11, 12].includes(card.card_id)) return true;
+  return card.color === topCard.color || card.card_id === topCard.id;
 }
 
 function renderHand(hand) {
