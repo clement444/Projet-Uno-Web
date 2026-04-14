@@ -1,6 +1,7 @@
 import { broadcast, sendToPlayer } from "../broadcast.js";
 import { getRoomById } from "../../api/room.js";
-import { getGame } from "../gameManager.js";
+import { getGame, isBotPlayer } from "../gameManager.js";
+import { playBotTurn } from "../bot.js";
 
 export function onDrawCard(_message, socket, wss) {
   const room_id = socket.room_id;
@@ -43,4 +44,7 @@ export function onDrawCard(_message, socket, wss) {
 
   game.nextTurn();
   broadcast(wss, room_id, { type: "turn", player_id: game.getCurrentPlayer() });
+  if (isBotPlayer(room_id, game.getCurrentPlayer())) {
+    setTimeout(() => playBotTurn(game, room_id, wss), 1500);
+  }
 }
