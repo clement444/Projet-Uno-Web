@@ -4,20 +4,14 @@ import { verify_token } from "../../utils/auth.js";
 import db from "../../utils/db.js";
 
 export function createWebSocketServer(httpServer) {
-  const wss = new WebSocketServer({
-    server: httpServer,
-    handleProtocols: (protocols) => {
-      if (protocols.has("Authorization")) return "Authorization";
-      return false;
-    },
-  });
+  const wss = new WebSocketServer({ server: httpServer });
 
   wss.on("connection", (socket, req) => {
-    const protocols = req.headers["sec-websocket-protocol"]?.split(", ") ?? [];
-    const token = protocols[1]; // ["Authorization", "<token>"]
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const token = url.searchParams.get("token");
 
     if (!token) {
-      socket.close(4001, "No Authorization header provided.");
+      socket.close(4001, "Token manquant");
       return;
     }
 
