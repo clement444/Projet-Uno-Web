@@ -92,6 +92,20 @@ export class Game {
     return drawn;
   }
 
+  removePlayer(player_id) {
+    const idx = this.players.indexOf(player_id);
+    if (idx === -1) return null;
+
+    db.prepare("DELETE FROM player_deck WHERE party_id = ? AND user_id = ?").run(this.party_id, player_id);
+    this.players.splice(idx, 1);
+
+    if (this.players.length <= 1) {
+      return { gameOver: true, winner_id: this.players[0] ?? null };
+    }
+
+    return { gameOver: false, nextPlayer: this.players[this.currentIndex] };
+  }
+
   playCard(player_id, card_id, new_color = null) {
     const row = db.prepare(
       "SELECT id, card_id, color FROM player_deck WHERE party_id = ? AND user_id = ? AND card_id = ? LIMIT 1"
