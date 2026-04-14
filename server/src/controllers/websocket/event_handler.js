@@ -7,6 +7,10 @@ import { onUno } from "./events/uno.js";
 import { onCounterUno } from "./events/counter_uno.js";
 
 export function handleEvent(message, socket, wss) {
+  if (message.type !== "join_room" && !socket.user) {
+    socket.send(JSON.stringify({ error: "Non authentifié — envoie join_room d'abord" }));
+    return;
+  }
   switch (message.type) {
     case "join_room":
       onJoinRoom(message, socket, wss);
