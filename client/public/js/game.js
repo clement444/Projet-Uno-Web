@@ -1,14 +1,72 @@
-const token = localStorage.getItem("uno_token");
+const token    = localStorage.getItem("uno_token");
 const username = localStorage.getItem("uno_username");
-const roomId = localStorage.getItem("uno_room_id");
+const roomId   = localStorage.getItem("uno_room_id");
 
 if (!token || !roomId) window.location.href = "/";
 
 document.getElementById("current-player-name").textContent = username;
 
-const ws = new WebSocket(`ws://${location.host}?token=${token}`);
-let myCardCount = 0;
-let pendingUno = {};
+// ─── Constantes ───────────────────────────────────────────────────────────────
+
+const COLOR_HEX = { 1: "#F63A3A", 2: "#F6E747", 3: "#5DF55D", 4: "#565EF5" };
+
+const CARD_SVG = {
+  0:  "/public/assets/cards/0.svg",
+  1:  "/public/assets/cards/1.svg",
+  2:  "/public/assets/cards/2.svg",
+  3:  "/public/assets/cards/3.svg",
+  4:  "/public/assets/cards/4.svg",
+  5:  "/public/assets/cards/5.svg",
+  6:  "/public/assets/cards/6.svg",
+  7:  "/public/assets/cards/7.svg",
+  8:  "/public/assets/cards/8.svg",
+  9:  "/public/assets/cards/9.svg",
+  10: "/public/assets/cards/+2.svg",
+  11: "/public/assets/cards/+4.svg",
+  12: "/public/assets/cards/colors.svg",
+  13: "/public/assets/cards/block.svg",
+  14: "/public/assets/cards/change_direction.svg",
+};
+
+// Cache SVG texte
+const svgCache = {};
+async function loadSVG(url) {
+  if (!svgCache[url]) {
+    const r = await fetch(url);
+    svgCache[url] = await r.text();
+  }
+  return svgCache[url];
+}
+
+// Précharge toutes les SVG
+Object.values(CARD_SVG).forEach(loadSVG);
+
+// Crée un élément SVG coloré
+function makeSVGEl(svgText, color) {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = svgText.trim();
+  const svg = wrap.firstChild;
+  // Les SVG de nombres ont le rect de fond en premier
+  const rect = svg.querySelector("rect");
+  if (rect && color) rect.setAttribute("fill", color);
+  svg.style.width  = "100%";
+  svg.style.height = "100%";
+  svg.style.borderRadius = "10px";
+  return svg;
+}
+
+// ─── État ─────────────────────────────────────────────────────────────────────
+
+let myHand           = [];   // [{ card_id, color }]
+let currentPlayerId  = null;
+let currentColor     = null;
+let lastCard         = null;
+let pendingUno       = {};
+let pendingWildIndex = null;
+
+// ─── WebSocket ────────────────────────────────────────────────────────────────
+
+const ws = new WebSocket(`ws://${location.host}`, ["Authorization", token]);
 
 ws.addEventListener("open", () => {
   ws.send(JSON.stringify({ type: "join_room", room_id: roomId, player_id: username, name: username }));
@@ -17,76 +75,225 @@ ws.addEventListener("open", () => {
 ws.addEventListener("message", (event) => {
   const msg = JSON.parse(event.data);
 
-  if (msg.type === "card_played") updateCurrentCard(msg.card_id);
-  if (msg.type === "card_drawn") addCardToHand(msg.card_id);
-  if (msg.type === "hand_update") renderHand(msg.cards);
-  if (msg.type === "opponent_update") renderOpponents(msg.players);
-  if (msg.type === "uno_pending") {
-    pendingUno[msg.player_id] = true;
-    if (msg.player_id !== username) updateCounterUnoBtn();
-  }
-  if (msg.type === "uno_claimed") {
-    delete pendingUno[msg.player_id];
-    updateCounterUnoBtn();
+  switch (msg.type) {
+    case "game_started":
+    case "card_played":
+    case "player_drew":
+    case "uno_claimed":
+      applyPublicState(msg);
+      break;
+
+    case "hand_update":
+      myHand = msg.cards;
+      renderHand();
+      updateUnoBtn();
+      break;
+
+    case "uno_pending":
+      pendingUno[msg.player_id] = true;
+      toast(`${msg.player_id} dit UNO !`, "good");
+      updateCounterBtn();
+      break;
+
+    case "game_over":
+      showGameOver(msg.winner_id);
+      break;
+
+    case "play_error":
+      toast(friendlyError(msg.error), "bad");
+      break;
+
+    case "draw_error":
+      toast(friendlyError(msg.error), "bad");
+      break;
+
+    case "error":
+      toast(msg.error, "bad");
+      break;
   }
 });
 
-function updateCurrentCard(cardId) {
-  document.getElementById("current-card").textContent = cardId;
+function friendlyError(e) {
+  const map = {
+    not_your_turn:  "Ce n'est pas votre tour.",
+    cannot_play:    "Vous ne pouvez pas jouer cette carte.",
+    color_required: "Choisissez une couleur.",
+    invalid_card:   "Carte invalide.",
+    not_uno:        "Vous n'avez pas 1 seule carte.",
+    no_pending:     "Personne n'a dit UNO.",
+  };
+  return map[e] ?? e;
 }
 
-function renderHand(cards) {
-  const list = document.getElementById("player-cards");
-  list.innerHTML = "";
-  myCardCount = cards.length;
-  cards.forEach((card) => {
-    const li = document.createElement("li");
-    const btn = document.createElement("button");
-    btn.textContent = card;
-    btn.addEventListener("click", () => {
-      ws.send(JSON.stringify({ type: "play_card", room_id: roomId, player_id: username, card_id: card }));
-    });
-    li.appendChild(btn);
-    list.appendChild(li);
-  });
-  updateUnoBtn();
+// ─── Appliquer l'état public ──────────────────────────────────────────────────
+
+function applyPublicState(msg) {
+  if (msg.current_player_id !== undefined) currentPlayerId = msg.current_player_id;
+  if (msg.color     !== undefined) currentColor = msg.color;
+  if (msg.last_card !== undefined) lastCard     = msg.last_card;
+
+  // Nettoyer UNO pending si uno_claimed
+  if (msg.type === "uno_claimed") {
+    delete pendingUno[msg.target_id];
+    if (msg.caller_id !== username) toast(`${msg.caller_id} a contré UNO de ${msg.target_id} !`, "good");
+    updateCounterBtn();
+  }
+
+  renderTopCard();
+  renderColorIndicator();
+  renderOpponents(msg.card_counts ?? {});
+  renderTurnBadge();
+  renderHand(); // re-render pour mettre à jour les jouables
 }
 
-function addCardToHand(cardId) {
-  myCardCount++;
-  const list = document.getElementById("player-cards");
-  const li = document.createElement("li");
-  const btn = document.createElement("button");
-  btn.textContent = cardId;
-  btn.addEventListener("click", () => {
-    ws.send(JSON.stringify({ type: "play_card", room_id: roomId, player_id: username, card_id: cardId }));
-  });
-  li.appendChild(btn);
-  list.appendChild(li);
-  updateUnoBtn();
+// ─── Carte du dessus (défausse) ───────────────────────────────────────────────
+
+async function renderTopCard() {
+  const el = document.getElementById("current-card");
+  el.innerHTML = "";
+  if (!lastCard) { el.innerHTML = `<span class="slot-label">Défausse</span>`; return; }
+
+  const url = CARD_SVG[lastCard.card_id];
+  if (!url) return;
+  const svgText = await loadSVG(url);
+  const color   = lastCard.color ? COLOR_HEX[lastCard.color] : null;
+  el.appendChild(makeSVGEl(svgText, color));
 }
 
-function renderOpponents(players) {
+// ─── Indicateur de couleur ────────────────────────────────────────────────────
+
+function renderColorIndicator() {
+  const el = document.getElementById("color-indicator");
+  el.style.background = currentColor ? COLOR_HEX[currentColor] : "#333";
+  el.classList.toggle("lit", !!currentColor);
+  el.style.color = currentColor ? COLOR_HEX[currentColor] : "transparent";
+}
+
+// ─── Badge de tour ────────────────────────────────────────────────────────────
+
+function renderTurnBadge() {
+  const el      = document.getElementById("turn-badge");
+  const isMyTurn = String(currentPlayerId) === String(username);
+  el.textContent = isMyTurn ? "C'est votre tour !" : `Tour de ${currentPlayerId ?? "…"}`;
+  el.classList.toggle("my-turn", isMyTurn);
+  document.getElementById("draw-btn").disabled = !isMyTurn;
+}
+
+// ─── Adversaires ──────────────────────────────────────────────────────────────
+
+function renderOpponents(counts) {
   const list = document.getElementById("opponent-list");
   list.innerHTML = "";
-  players.filter((p) => p.id !== username).forEach((p) => {
-    const li = document.createElement("li");
-    li.id = `opponent-${p.id}`;
-    li.textContent = `${p.name} - ${p.card_count} carte(s)`;
+  Object.entries(counts).forEach(([pid, count]) => {
+    if (String(pid) === String(username)) return;
+    const li    = document.createElement("li");
+    const isActive = String(pid) === String(currentPlayerId);
+    li.className = `opponent-card${isActive ? " active" : ""}`;
+    const initial = String(pid).charAt(0).toUpperCase();
+    li.innerHTML = `
+      <div class="opponent-avatar">${initial}</div>
+      <span class="opponent-name">${pid}</span>
+      <span class="opponent-count">${count} carte${count > 1 ? "s" : ""}</span>
+    `;
     list.appendChild(li);
   });
 }
 
-const unoBtn = document.getElementById("uno-btn");
-const counterUnoBtn = document.getElementById("counter-uno-btn");
+// ─── Main du joueur ───────────────────────────────────────────────────────────
 
-function updateUnoBtn() {
-  unoBtn.disabled = myCardCount !== 1;
+async function renderHand() {
+  const list    = document.getElementById("player-cards");
+  list.innerHTML = "";
+  const isMyTurn = String(currentPlayerId) === String(username);
+
+  for (let i = 0; i < myHand.length; i++) {
+    const card    = myHand[i];
+    const playable = isMyTurn && canPlay(card);
+
+    const li  = document.createElement("li");
+    const div = document.createElement("div");
+    div.className = `hand-card noselect ${playable ? "playable" : "not-playable"}`;
+    div.title = playable ? "Jouer cette carte" : "";
+
+    // SVG coloré
+    const url = CARD_SVG[card.card_id];
+    if (url) {
+      const svgText = await loadSVG(url);
+      const color   = card.color ? COLOR_HEX[card.color] : null;
+      div.appendChild(makeSVGEl(svgText, color));
+    }
+
+    if (playable) {
+      div.addEventListener("click", () => handlePlay(i, card));
+    }
+
+    li.appendChild(div);
+    list.appendChild(li);
+  }
 }
 
-function updateCounterUnoBtn() {
-  const hasPending = Object.keys(pendingUno).some((id) => id !== username);
-  counterUnoBtn.disabled = !hasPending;
+// ─── Peut-on jouer cette carte ? ─────────────────────────────────────────────
+
+function canPlay(card) {
+  if (lastCard === null) return true;
+  const isWild = card.card_id === 11 || card.card_id === 12;
+  if (isWild) return true;
+  return card.color === currentColor || card.card_id === lastCard.card_id;
+}
+
+// ─── Jouer ────────────────────────────────────────────────────────────────────
+
+function handlePlay(index, card) {
+  const isWild = card.card_id === 11 || card.card_id === 12;
+  if (isWild) {
+    pendingWildIndex = index;
+    showColorModal();
+  } else {
+    sendPlay(index, null);
+  }
+}
+
+function sendPlay(index, chosenColor) {
+  ws.send(JSON.stringify({
+    type:         "play_card",
+    room_id:      roomId,
+    player_id:    username,
+    card_index:   index,
+    chosen_color: chosenColor,
+  }));
+}
+
+// ─── Modal couleur ────────────────────────────────────────────────────────────
+
+function showColorModal() {
+  document.getElementById("color-modal").classList.remove("hidden");
+}
+
+document.querySelectorAll(".color-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.getElementById("color-modal").classList.add("hidden");
+    if (pendingWildIndex !== null) {
+      sendPlay(pendingWildIndex, Number(btn.dataset.color));
+      pendingWildIndex = null;
+    }
+  });
+});
+
+// ─── Piocher ──────────────────────────────────────────────────────────────────
+
+document.getElementById("draw-btn").addEventListener("click", () => {
+  ws.send(JSON.stringify({ type: "draw_card", room_id: roomId, player_id: username }));
+});
+
+// ─── UNO ──────────────────────────────────────────────────────────────────────
+
+const unoBtn     = document.getElementById("uno-btn");
+const counterBtn = document.getElementById("counter-uno-btn");
+
+function updateUnoBtn()  { unoBtn.disabled = myHand.length !== 1; }
+function updateCounterBtn() {
+  const has = Object.keys(pendingUno).some((id) => String(id) !== String(username));
+  counterBtn.disabled = !has;
 }
 
 unoBtn.addEventListener("click", () => {
@@ -94,13 +301,36 @@ unoBtn.addEventListener("click", () => {
   unoBtn.disabled = true;
 });
 
-counterUnoBtn.addEventListener("click", () => {
-  const target = Object.keys(pendingUno).find((id) => id !== username);
+counterBtn.addEventListener("click", () => {
+  const target = Object.keys(pendingUno).find((id) => String(id) !== String(username));
   if (!target) return;
   ws.send(JSON.stringify({ type: "counter_uno", room_id: roomId, player_id: username, target_id: target }));
-  counterUnoBtn.disabled = true;
 });
 
-document.getElementById("draw-btn").addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "draw_card", room_id: roomId, player_id: username }));
+// ─── Game over ────────────────────────────────────────────────────────────────
+
+function showGameOver(winner_id) {
+  const isWinner = String(winner_id) === String(username);
+  document.getElementById("gameover-title").textContent = isWinner ? "🎉 Vous avez gagné !" : `${winner_id} a gagné !`;
+  document.getElementById("gameover-sub").textContent   = isWinner ? "Félicitations !" : "Meilleure chance la prochaine fois.";
+  document.getElementById("gameover-modal").classList.remove("hidden");
+}
+
+document.getElementById("back-lobby-btn").addEventListener("click", () => {
+  window.location.href = "/lobby";
 });
+
+// ─── Toasts ───────────────────────────────────────────────────────────────────
+
+function toast(msg, type = "") {
+  const container = document.getElementById("toast-container");
+  const div = document.createElement("div");
+  div.className = `toast${type ? ` toast-${type}` : ""}`;
+  div.textContent = msg;
+  container.appendChild(div);
+  setTimeout(() => div.remove(), 3500);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
+document.getElementById("draw-btn").disabled = true;

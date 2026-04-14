@@ -1,26 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Uno - Salle d'attente</title>
-  </head>
-  <body>
-    <header style="text-align: center">
-      <a href="/"><img src="/public/images/logo.png" alt="Uno" width="250" /></a>
-      <span id="room-name"></span>
-    </header>
-    <main>
-      <h1>Salle d'attente</h1>
-      <section id="player-list">
-        <h2>Joueurs dans la room</h2>
-        <ul id="players"></ul>
-      </section>
-      <section id="actions">
-        <button id="start-btn" hidden>Lancer la partie</button>
-        <button id="leave-btn">Quitter la room</button>
-      </section>
-    </main>
-    <script src="/public/js/room.js"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Uno - Salle d'attente</title>
+        <link rel="stylesheet" href="/public/css/room/room.css" />
+    </head>
+    <body>
+        <header>
+            <a href="/">
+                <img
+                    src="/public/images/logo.png"
+                    alt="Uno"
+                    class="noselect"
+                    draggable="false"
+                />
+            </a>
+            <div id="user-display" class="noselect">
+                <div id="user-info">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="user-icon"
+                    >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M12 2a5 5 0 1 1 -5 5l.005 -.217a5 5 0 0 1 4.995 -4.783z"
+                        />
+                        <path
+                            d="M14 14a5 5 0 0 1 5 5v1a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-1a5 5 0 0 1 5 -5h4z"
+                        />
+                    </svg>
+                    <span id="current-username"></span>
+                </div>
+                <button type="button" id="leave-btn">Quitter le salon</button>
+            </div>
+        </header>
+        <main class="noselect">
+            <section id="room-section">
+                <div id="room-header">
+                    <div id="room-title">
+                        <h2>Salon</h2>
+                        <p id="room-name"></p>
+                    </div>
+                    <span id="player-count">0 / 4</span>
+                </div>
+                <ul id="players"></ul>
+            </section>
+            <section id="action-section">
+                <button type="button" id="start-btn" hidden>
+                    Lancer la partie
+                </button>
+                <p id="waiting-msg">En attente que l'hôte lance la partie…</p>
+            </section>
+        </main>
+        <div class="bg-container" id="bg-container"></div>
+        <script src="/public/js/room.js"></script>
+    </body>
 </html>

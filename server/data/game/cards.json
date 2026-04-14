@@ -1,78 +1,97 @@
 [
   {
     "id": 0,
-    "name": "0"
+    "name": "0",
+    "asset_link": "/public/assets/cards/0.svg"
   },
   {
     "id": 1,
-    "name": "1"
+    "name": "1",
+    "asset_link": "/public/assets/cards/1.svg"
   },
   {
     "id": 2,
-    "name": "2"
+    "name": "2",
+    "asset_link": "/public/assets/cards/2.svg"
   },
   {
     "id": 3,
-    "name": "3"
+    "name": "3",
+    "asset_link": "/public/assets/cards/3.svg"
   },
   {
     "id": 4,
-    "name": "4"
+    "name": "4",
+    "asset_link": "/public/assets/cards/4.svg"
   },
   {
     "id": 5,
-    "name": "5"
+    "name": "5",
+    "asset_link": "/public/assets/cards/5.svg"
   },
   {
     "id": 6,
-    "name": "6"
+    "name": "6",
+    "asset_link": "/public/assets/cards/6.svg"
   },
   {
     "id": 7,
-    "name": "7"
+    "name": "7",
+    "asset_link": "/public/assets/cards/7.svg"
   },
   {
     "id": 8,
-    "name": "8"
+    "name": "8",
+    "asset_link": "/public/assets/cards/8.svg"
   },
   {
     "id": 9,
-    "name": "9"
+    "name": "9",
+    "asset_link": "/public/assets/cards/9.svg"
   },
   {
     "id": 10,
-    "name": "+2"
+    "name": "+2",
+    "asset_link": "/public/assets/cards/+2.svg"
   },
   {
     "id": 11,
-    "name": "+4"
+    "name": "+4",
+    "asset_link": "/public/assets/cards/+4.svg"
   },
   {
     "id": 12,
-    "name": "Change colors"
+    "name": "Change colors",
+    "asset_link": "/public/assets/cards/colors.svg"
   },
   {
     "id": 13,
-    "name": "Block"
+    "name": "Block",
+    "asset_link": "/public/assets/cards/block.svg"
   },
   {
     "id": 14,
-    "name": "Change direction"
+    "name": "Change direction",
+    "asset_link": "/public/assets/cards/change_direction.svg"
   },
   {
     "id": 15,
-    "name": "Fire"
+    "name": "Fire",
+    "asset_link": "/public/assets/cards/fire.svg"
   },
   {
     "id": 16,
-    "name": "Eye"
+    "name": "Eye",
+    "asset_link": "/public/assets/cards/eye.svg"
   },
   {
     "id": 17,
-    "name": "Shuffle pick"
+    "name": "Shuffle pick",
+    "asset_link": "/public/assets/cards/shuffle.svg"
   },
   {
     "id": 18,
-    "name": "Switch deck"
+    "name": "Switch deck",
+    "asset_link": "/public/assets/cards/deck.svg"
   }
 ]
