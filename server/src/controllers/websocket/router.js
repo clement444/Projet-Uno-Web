@@ -19,25 +19,24 @@ export function router(socket, wss) {
   socket.on("close", () => {
     if (!socket.room_id || !socket.user) return;
 
+    const game = getGame(socket.room_id);
+
+    if (game) {
+      // Partie en cours : ne pas toucher à la room ni au jeu.
+      // Le joueur est en transition room→game ou va se reconnecter.
+      broadcast(wss, socket.room_id, {
+        type: "player_disconnected",
+        player_id: socket.user.id,
+      });
+      return;
+    }
+
+    // Pas de partie active : nettoyage normal de la room.
     const room = getRoomById(socket.room_id);
     if (room) room.removePlayer(socket.user.id);
-
     broadcast(wss, socket.room_id, {
       type: "player_disconnected",
-      room_id: socket.room_id,
       player_id: socket.user.id,
     });
-
-    const game = getGame(socket.room_id);
-    if (!game) return;
-
-    const result = game.removePlayer(socket.user.id);
-    if (!result) return;
-
-    if (result.gameOver) {
-      broadcast(wss, socket.room_id, { type: "game_over", winner_id: result.winner_id });
-    } else {
-      broadcast(wss, socket.room_id, { type: "turn", player_id: result.nextPlayer });
-    }
   });
 }
