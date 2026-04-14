@@ -51,22 +51,26 @@ ws.addEventListener("message", (event) => {
     updateCounterUnoBtn();
   }
   if (msg.type === "draw_forced") {
-    showNotification(`Joueur ${msg.player_id} pioche ${msg.count} carte(s) !`);
+    const name = playerNames[msg.player_id] ?? `Joueur ${msg.player_id}`;
+    showNotification(`${name} pioche ${msg.count} carte(s) !`);
     updateOpponentCount(msg.player_id, msg.count);
   }
   if (msg.type === "player_skipped") {
-    showNotification(`Joueur ${msg.player_id} est passé !`);
+    const name = playerNames[msg.player_id] ?? `Joueur ${msg.player_id}`;
+    showNotification(`${name} est passé !`);
   }
   if (msg.type === "direction_changed") {
     updateDirectionIndicator(msg.direction);
   }
   if (msg.type === "player_disconnected") {
-    showNotification(`Joueur ${msg.player_id} s'est déconnecté.`);
+    const name = playerNames[msg.player_id] ?? `Joueur ${msg.player_id}`;
+    showNotification(`${name} s'est déconnecté.`);
     const el = document.getElementById(`opponent-${msg.player_id}`);
     if (el) el.remove();
   }
   if (msg.type === "game_over") {
-    const text = msg.winner_id === myId ? "Tu as gagné !" : `Partie terminée — gagnant : joueur ${msg.winner_id}`;
+    const name = playerNames[msg.winner_id] ?? `Joueur ${msg.winner_id}`;
+    const text = msg.winner_id === myId ? "Tu as gagné !" : `Partie terminée — gagnant : ${name}`;
     showNotification(text);
     setTimeout(() => { window.location.href = "/"; }, 4000);
   }
