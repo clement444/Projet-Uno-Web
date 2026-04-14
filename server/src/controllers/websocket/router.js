@@ -27,5 +27,17 @@ export function router(socket, wss) {
       room_id: socket.room_id,
       player_id: socket.user.id,
     });
+
+    const game = getGame(socket.room_id);
+    if (!game) return;
+
+    const result = game.removePlayer(socket.user.id);
+    if (!result) return;
+
+    if (result.gameOver) {
+      broadcast(wss, socket.room_id, { type: "game_over", winner_id: result.winner_id });
+    } else {
+      broadcast(wss, socket.room_id, { type: "turn", player_id: result.nextPlayer });
+    }
   });
 }
