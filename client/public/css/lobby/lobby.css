@@ -146,7 +146,9 @@ header img {
     font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        opacity 0.2s ease,
+        box-shadow 0.2s ease;
     box-shadow: 0 4px 16px rgba(99, 62, 237, 0.35);
     letter-spacing: 0.01em;
 }
