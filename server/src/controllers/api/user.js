@@ -2,19 +2,21 @@ import db from "../../utils/db";
 import { generate_token } from "../../utils/auth";
 
 export async function createUser(username, password) {
-  const { clean_username, clean_password } = cleanCredentials(
-    username,
-    password,
-  );
+  const { username: clean_username, password: clean_password } =
+    cleanCredentials(username, password);
 
   if (!clean_username || !clean_password)
-    throw new Error({
-      status_code: 400,
-      message: "Username and password is required.",
-    });
+    throw new Error(
+      JSON.stringify({
+        status_code: 400,
+        message: "Username and password is required.",
+      }),
+    );
 
   if (username.length > 20)
-    throw new Error({ status_code: 400, message: "Username too long." });
+    throw new Error(
+      JSON.stringify({ status_code: 400, message: "Username too long." }),
+    );
 
   const hashed = await Bun.password.hash(clean_password);
 
@@ -31,41 +33,52 @@ export async function createUser(username, password) {
     console.error("createUser error:", err);
 
     if (err.message?.includes("UNIQUE constraint failed")) {
-      throw new Error({ status_code: 409, message: "Username already taken." });
+      throw new Error(
+        JSON.stringify({
+          status_code: 409,
+          message: "Username already taken.",
+        }),
+      );
     }
 
-    throw new Error({ status_code: 500, message: "Cannot create account." });
+    throw new Error(
+      JSON.stringify({ status_code: 500, message: "Cannot create account." }),
+    );
   }
 }
 
 export async function loginUser(username, password) {
-  const { clean_username, clean_password } = cleanCredentials(
-    username,
-    password,
-  );
+  const { username: clean_username, password: clean_password } =
+    cleanCredentials(username, password);
 
   if (!clean_username || !clean_password)
-    throw new Error({
-      status_code: 400,
-      message: "Username and password is required.",
-    });
+    throw new Error(
+      JSON.stringify({
+        status_code: 400,
+        message: "Username and password is required.",
+      }),
+    );
 
   const user = db
     .prepare("SELECT * FROM users WHERE username = ?")
     .get(clean_username);
   if (!user) {
-    throw new Error({
-      status_code: 401,
-      message: "Wrong credentials.",
-    });
+    throw new Error(
+      JSON.stringify({
+        status_code: 401,
+        message: "Wrong credentials.",
+      }),
+    );
   }
 
   const valid = await Bun.password.verify(clean_password, user.password_hash);
   if (!valid) {
-    throw new Error({
-      status_code: 401,
-      message: "Wrong credentials.",
-    });
+    throw new Error(
+      JSON.stringify({
+        status_code: 401,
+        message: "Wrong credentials.",
+      }),
+    );
   }
 
   const token = generate_token(user.id);

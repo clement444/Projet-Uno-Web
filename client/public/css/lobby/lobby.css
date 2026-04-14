@@ -395,6 +395,7 @@ form p {
     align-items: center;
     overflow: hidden;
     background-color: transparent;
+    animation: fadeIn 0.5s ease-out forwards;
 }
 
 .card svg {

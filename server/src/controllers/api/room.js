@@ -2,25 +2,39 @@ import { Room } from "../../structures/game/room";
 import db from "../../utils/db";
 
 export function createRoom(ownerId, name, maxPlayers = 4) {
-  if (name.trim() == "") throw new Error("No name provided.");
+  if (name.trim() == "")
+    throw new Error(
+      JSON.stringify({
+        status_code: 400,
+        message: "No name provided.",
+      }),
+    );
 
   const existing = db
     .prepare("SELECT id FROM rooms WHERE name = ? LIMIT 1")
     .get(name);
 
   if (existing) {
-    throw new Error("A room with this name already exists.");
+    throw new Error(
+      JSON.stringify({
+        status_code: 401,
+        message: "A room with this name already exists.",
+      }),
+    );
   }
 
   if (isPlayerInARoom(ownerId))
-    throw new Error("You can't create another room while being in one.");
+    throw new Error(
+      JSON.stringify({
+        status_code: 401,
+        message: "You can't create another room while being in one.",
+      }),
+    );
 
   const stmt = db.prepare(
     "INSERT INTO rooms (owner_id, name, max_players) VALUES (?, ?, ?)",
   );
   const info = stmt.run(ownerId, name, maxPlayers);
-
-  // Ajouter un évènement WS pour afficher le nouveau salon créé
 
   return getRoomById(info.lastInsertRowid);
 }

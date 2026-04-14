@@ -64,16 +64,8 @@ export default () => {
           isPlayerHost: room.owner_id == user.id,
         });
       } catch (e) {
-        switch (e) {
-          case "Already in room":
-            return res.status(400).json({ message: e });
-          case "Room is full":
-            return res.status(401).json({ message: e });
-          default:
-            return res
-              .status(500)
-              .json({ message: "Unable to join the room." });
-        }
+        const err = JSON.parse(e.message);
+        return res.status(err.status_code).json({ message: err.message });
       }
     }
 
