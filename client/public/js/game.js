@@ -123,11 +123,11 @@ function renderHand(hand) {
     img.src = `/public/assets/cards/${CARD_ASSETS[card.card_id]}.svg`;
     img.alt = CARD_ASSETS[card.card_id];
     btn.appendChild(img);
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const payload = { type: "play_card", card_id: card.card_id };
       if ([11, 12].includes(card.card_id)) {
-        const color = parseInt(prompt("Choisis une couleur :\n1 = Rouge\n2 = Bleu\n3 = Vert\n4 = Jaune") || "1");
-        if (!color || color < 1 || color > 4) return;
+        const color = await askColor();
+        if (!color) return;
         payload.color = color;
       }
       ws.send(JSON.stringify(payload));
@@ -222,6 +222,21 @@ document.getElementById("leave-btn").addEventListener("click", () => {
   ws.send(JSON.stringify({ type: "leave_room" }));
   window.location.href = "/";
 });
+
+function askColor() {
+  return new Promise((resolve) => {
+    const picker = document.getElementById("color-picker");
+    picker.hidden = false;
+    function onPick(e) {
+      const btn = e.target.closest("button[data-color]");
+      if (!btn) return;
+      picker.hidden = true;
+      picker.removeEventListener("click", onPick);
+      resolve(parseInt(btn.dataset.color));
+    }
+    picker.addEventListener("click", onPick);
+  });
+}
 
 function showNotification(text) {
   const el = document.getElementById("notification");
