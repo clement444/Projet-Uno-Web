@@ -20,6 +20,10 @@ let isMyTurn = false;
 const pendingUno = {};
 const playerNames = {};
 
+const unoBtn = document.getElementById("uno-btn");
+const counterUnoBtn = document.getElementById("counter-uno-btn");
+const jouerBtn = document.getElementById("jouer-btn");
+
 ws.addEventListener("open", () => {
   ws.send(JSON.stringify({ type: "join_room", room_id: parseInt(roomId), token }));
 });
@@ -101,6 +105,7 @@ function renderTopCard(card) {
 function updateTurnIndicator(player_id) {
   isMyTurn = player_id === myId;
   document.getElementById("draw-btn").disabled = !isMyTurn;
+  jouerBtn.disabled = !isMyTurn;
   document.getElementById("turn-indicator").textContent = isMyTurn
     ? "C'est ton tour !"
     : `Tour de ${playerNames[player_id] ?? `joueur ${player_id}`}`;
@@ -190,20 +195,21 @@ function renderOpponent(id) {
   li.appendChild(badge);
 }
 
-const unoBtn = document.getElementById("uno-btn");
-const counterUnoBtn = document.getElementById("counter-uno-btn");
-
 function updateUnoBtn(count) {
-  unoBtn.disabled = count !== 1;
+  const show = count === 1;
+  unoBtn.hidden = !show;
+  unoBtn.disabled = !show;
 }
 
 function updateCounterUnoBtn() {
   const hasPending = Object.keys(pendingUno).some((id) => parseInt(id) !== myId);
+  counterUnoBtn.hidden = !hasPending;
   counterUnoBtn.disabled = !hasPending;
 }
 
 unoBtn.addEventListener("click", () => {
   ws.send(JSON.stringify({ type: "uno" }));
+  unoBtn.hidden = true;
   unoBtn.disabled = true;
 });
 
@@ -211,7 +217,12 @@ counterUnoBtn.addEventListener("click", () => {
   const target = Object.keys(pendingUno).map(Number).find((id) => id !== myId);
   if (!target) return;
   ws.send(JSON.stringify({ type: "counter_uno", target_id: target }));
+  counterUnoBtn.hidden = true;
   counterUnoBtn.disabled = true;
+});
+
+jouerBtn.addEventListener("click", () => {
+  ws.send(JSON.stringify({ type: "draw_card" }));
 });
 
 document.getElementById("draw-btn").addEventListener("click", () => {
