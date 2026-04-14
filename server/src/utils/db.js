@@ -50,17 +50,30 @@ db.run(`
   )
 `);
 
+// Migration : party_players.user_id était UNIQUE global → doit être UNIQUE(party_id, user_id)
+const ppSchema = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='party_players'").get();
+if (ppSchema?.sql?.includes("user_id INTEGER NOT NULL UNIQUE")) {
+  db.run("DROP TABLE IF EXISTS party_players");
+}
+
 db.run(`
   CREATE TABLE IF NOT EXISTS party_players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     party_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL,
     is_spectator INTEGER NOT NULL CHECK(is_spectator IN (0, 1)) DEFAULT 0,
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(party_id) REFERENCES parties(id) ON DELETE CASCADE,
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(party_id, user_id)
   )
 `);
+
+// Migration : player_deck avait UNIQUE(party_id, user_id, card_id) → un joueur peut avoir plusieurs fois le même card_id
+const pdSchema = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='player_deck'").get();
+if (pdSchema?.sql?.includes("UNIQUE(party_id, user_id, card_id)")) {
+  db.run("DROP TABLE IF EXISTS player_deck");
+}
 
 db.run(`
   CREATE TABLE IF NOT EXISTS player_deck (
@@ -70,8 +83,7 @@ db.run(`
     party_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY(party_id) REFERENCES parties(id) ON DELETE CASCADE,
-    UNIQUE(party_id, user_id, card_id)
+    FOREIGN KEY(party_id) REFERENCES parties(id) ON DELETE CASCADE
   )
 `);
 
