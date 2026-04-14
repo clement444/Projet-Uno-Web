@@ -15,8 +15,7 @@ ws.addEventListener("open", () => {
     JSON.stringify({
       type: "join_room",
       room_id: roomId,
-      player_id: username,
-      name: username,
+      token: "JHJAIJIDAJIDJAID",
     }),
   );
 });

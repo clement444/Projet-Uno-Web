@@ -26,6 +26,7 @@ ws.addEventListener("open", () => {
 });
 
 ws.addEventListener("message", (event) => {
+  console.log(event);
   const msg = JSON.parse(event.data);
 
   if (msg.type === "player_joined") addPlayer(msg.name, msg.player_id);

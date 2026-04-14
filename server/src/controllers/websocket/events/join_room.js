@@ -8,6 +8,15 @@ export function onJoinRoom(message, socket, wss) {
   const room = getRoomById(room_id);
   if (!room) return;
 
+  room.addPlayer(player_id);
+
+  socket.send(
+    JSON.stringify({
+      type: "room_players",
+      players: room.getPlayers(),
+    }),
+  );
+
   broadcast(wss, room_id, {
     type: "player_joined",
     room_id,

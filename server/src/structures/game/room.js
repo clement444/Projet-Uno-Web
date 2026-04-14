@@ -66,9 +66,21 @@ export class Room {
 
   getPlayers() {
     const rows = db
-      .prepare("SELECT user_id FROM room_players WHERE room_id = ?")
+      .prepare(
+        `
+        SELECT users.id, users.username, room_players.joined_at
+        FROM room_players
+        JOIN users ON users.id = room_players.user_id
+        WHERE room_players.room_id = ?
+        ORDER BY room_players.joined_at ASC
+      `,
+      )
       .all(this.id);
 
-    return rows.map((r) => r.user_id);
+    return rows.map((r) => ({
+      id: r.id,
+      username: r.username,
+      joined_at: r.joined_at,
+    }));
   }
 }
