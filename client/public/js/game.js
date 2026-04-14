@@ -116,7 +116,15 @@ function updateTurnIndicator(player_id) {
     ? "C'est ton tour !"
     : `Tour de ${playerNames[player_id] ?? `joueur ${player_id}`}`;
   document.querySelectorAll("#player-cards button").forEach((btn) => {
-    btn.disabled = !isMyTurn;
+    if (!isMyTurn) {
+      btn.disabled = true;
+      btn.classList.remove("card-playable");
+    } else {
+      const card = { card_id: parseInt(btn.dataset.cardId), color: parseInt(btn.dataset.color) };
+      const playable = isCardPlayable(card);
+      btn.disabled = !playable;
+      btn.classList.toggle("card-playable", playable);
+    }
   });
 }
 
@@ -135,7 +143,11 @@ function renderHand(hand) {
     const btn = document.createElement("button");
     btn.className = "card-face";
     btn.style.background = COLOR_BG[card.color] || "#333";
-    btn.disabled = !isMyTurn;
+    const playable = isMyTurn && isCardPlayable(card);
+    btn.disabled = !isMyTurn || !playable;
+    btn.dataset.cardId = card.card_id;
+    btn.dataset.color = card.color;
+    btn.classList.toggle("card-playable", playable);
     const img = document.createElement("img");
     img.src = `/public/assets/cards/${CARD_ASSETS[card.card_id]}.svg`;
     img.alt = CARD_ASSETS[card.card_id];
