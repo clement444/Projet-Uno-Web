@@ -21,7 +21,7 @@ db.run(`
     name TEXT NOT NULL UNIQUE,
     max_players INTEGER NOT NULL CHECK(max_players > 0),
     FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE CASCADE
-  );
+  )
 `);
 
 db.run(`
@@ -33,7 +33,7 @@ db.run(`
     FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE(room_id, user_id)
-  );
+  )
 `);
 
 // Parties data
@@ -46,7 +46,7 @@ db.run(`
     room_id INTEGER NOT NULL,
     started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE
-  );
+  )
 `);
 
 db.run(`
@@ -57,8 +57,8 @@ db.run(`
     is_spectator INTEGER NOT NULL CHECK(is_spectator IN (0, 1)) DEFAULT 0,
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(party_id) REFERENCES parties(id) ON DELETE CASCADE,
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
-  );
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
 `);
 
 db.run(`
@@ -71,18 +71,18 @@ db.run(`
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY(party_id) REFERENCES parties(id) ON DELETE CASCADE,
     UNIQUE(party_id, user_id, card_id)
-  );
+  )
 `);
 
 // Indexing
 db.run(
-  `CREATE INDEX IF NOT EXISTS idx_room_players_user ON room_players (user_id);`,
+  `CREATE INDEX IF NOT EXISTS idx_room_players_user ON room_players (user_id)`,
 );
 db.run(
-  `CREATE INDEX IF NOT EXISTS idx_party_players_user ON party_players (user_id);`,
+  `CREATE INDEX IF NOT EXISTS idx_party_players_user ON party_players (user_id)`,
 );
 db.run(
-  `CREATE INDEX IF NOT EXISTS idx_player_deck_user ON player_deck (user_id);`,
+  `CREATE INDEX IF NOT EXISTS idx_player_deck_user ON player_deck (user_id)`,
 );
 
 export default db;
