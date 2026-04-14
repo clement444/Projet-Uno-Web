@@ -32,6 +32,8 @@ ws.addEventListener("message", (event) => {
   if (msg.type === "player_left") removePlayer(msg.player_id);
   if (msg.type === "player_disconnected") removePlayer(msg.player_id);
   if (msg.type === "game_started") window.location.href = "/game";
+
+  checkHost();
 });
 
 function addPlayer(name, id) {
