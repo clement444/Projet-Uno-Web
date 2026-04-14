@@ -16,6 +16,7 @@ const COLOR_BG = { 0: "#333", 1: "#F63A3A", 2: "#565EF5", 3: "#5DF55D", 4: "#F5D
 
 const ws = new WebSocket(`ws://${location.host}?token=${token}`);
 let myId = null;
+let isMyTurn = false;
 const pendingUno = {};
 const playerNames = {};
 
@@ -89,11 +90,14 @@ function renderTopCard(card) {
 }
 
 function updateTurnIndicator(player_id) {
-  const isMyTurn = player_id === myId;
+  isMyTurn = player_id === myId;
   document.getElementById("draw-btn").disabled = !isMyTurn;
   document.getElementById("turn-indicator").textContent = isMyTurn
     ? "C'est ton tour !"
     : `Tour de ${playerNames[player_id] ?? `joueur ${player_id}`}`;
+  document.querySelectorAll("#player-cards button").forEach((btn) => {
+    btn.disabled = !isMyTurn;
+  });
 }
 
 function renderHand(hand) {
