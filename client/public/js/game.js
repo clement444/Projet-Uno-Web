@@ -11,7 +11,14 @@ let myCardCount = 0;
 let pendingUno = {};
 
 ws.addEventListener("open", () => {
-  ws.send(JSON.stringify({ type: "join_room", room_id: roomId, player_id: username, name: username }));
+  ws.send(
+    JSON.stringify({
+      type: "join_room",
+      room_id: roomId,
+      player_id: username,
+      name: username,
+    }),
+  );
 });
 
 ws.addEventListener("message", (event) => {
@@ -44,7 +51,14 @@ function renderHand(cards) {
     const btn = document.createElement("button");
     btn.textContent = card;
     btn.addEventListener("click", () => {
-      ws.send(JSON.stringify({ type: "play_card", room_id: roomId, player_id: username, card_id: card }));
+      ws.send(
+        JSON.stringify({
+          type: "play_card",
+          room_id: roomId,
+          player_id: username,
+          card_id: card,
+        }),
+      );
     });
     li.appendChild(btn);
     list.appendChild(li);
@@ -59,7 +73,14 @@ function addCardToHand(cardId) {
   const btn = document.createElement("button");
   btn.textContent = cardId;
   btn.addEventListener("click", () => {
-    ws.send(JSON.stringify({ type: "play_card", room_id: roomId, player_id: username, card_id: cardId }));
+    ws.send(
+      JSON.stringify({
+        type: "play_card",
+        room_id: roomId,
+        player_id: username,
+        card_id: cardId,
+      }),
+    );
   });
   li.appendChild(btn);
   list.appendChild(li);
@@ -69,12 +90,14 @@ function addCardToHand(cardId) {
 function renderOpponents(players) {
   const list = document.getElementById("opponent-list");
   list.innerHTML = "";
-  players.filter((p) => p.id !== username).forEach((p) => {
-    const li = document.createElement("li");
-    li.id = `opponent-${p.id}`;
-    li.textContent = `${p.name} - ${p.card_count} carte(s)`;
-    list.appendChild(li);
-  });
+  players
+    .filter((p) => p.id !== username)
+    .forEach((p) => {
+      const li = document.createElement("li");
+      li.id = `opponent-${p.id}`;
+      li.textContent = `${p.name} - ${p.card_count} carte(s)`;
+      list.appendChild(li);
+    });
 }
 
 const unoBtn = document.getElementById("uno-btn");
@@ -90,17 +113,28 @@ function updateCounterUnoBtn() {
 }
 
 unoBtn.addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "uno", room_id: roomId, player_id: username }));
+  ws.send(
+    JSON.stringify({ type: "uno", room_id: roomId, player_id: username }),
+  );
   unoBtn.disabled = true;
 });
 
 counterUnoBtn.addEventListener("click", () => {
   const target = Object.keys(pendingUno).find((id) => id !== username);
   if (!target) return;
-  ws.send(JSON.stringify({ type: "counter_uno", room_id: roomId, player_id: username, target_id: target }));
+  ws.send(
+    JSON.stringify({
+      type: "counter_uno",
+      room_id: roomId,
+      player_id: username,
+      target_id: target,
+    }),
+  );
   counterUnoBtn.disabled = true;
 });
 
 document.getElementById("draw-btn").addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "draw_card", room_id: roomId, player_id: username }));
+  ws.send(
+    JSON.stringify({ type: "draw_card", room_id: roomId, player_id: username }),
+  );
 });

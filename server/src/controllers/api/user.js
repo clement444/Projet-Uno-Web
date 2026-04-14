@@ -9,13 +9,16 @@ export async function createUser(username, password) {
     throw new Error(
       JSON.stringify({
         status_code: 400,
-        message: "Username and password is required.",
+        message: "Nom d'utilisateur et mot de passe requis.",
       }),
     );
 
   if (username.length > 20)
     throw new Error(
-      JSON.stringify({ status_code: 400, message: "Username too long." }),
+      JSON.stringify({
+        status_code: 400,
+        message: "Nom d'utilisateur trop long.",
+      }),
     );
 
   const hashed = await Bun.password.hash(clean_password);
@@ -36,13 +39,16 @@ export async function createUser(username, password) {
       throw new Error(
         JSON.stringify({
           status_code: 409,
-          message: "Username already taken.",
+          message: "Nom d'utilisateur déjà pris.",
         }),
       );
     }
 
     throw new Error(
-      JSON.stringify({ status_code: 500, message: "Cannot create account." }),
+      JSON.stringify({
+        status_code: 500,
+        message: "Impossible de créer le compte.",
+      }),
     );
   }
 }
@@ -55,7 +61,7 @@ export async function loginUser(username, password) {
     throw new Error(
       JSON.stringify({
         status_code: 400,
-        message: "Username and password is required.",
+        message: "Nom d'utilisateur et mot de passe requis.",
       }),
     );
 
@@ -66,7 +72,7 @@ export async function loginUser(username, password) {
     throw new Error(
       JSON.stringify({
         status_code: 401,
-        message: "Wrong credentials.",
+        message: "Identifiants incorrects.",
       }),
     );
   }
@@ -76,7 +82,7 @@ export async function loginUser(username, password) {
     throw new Error(
       JSON.stringify({
         status_code: 401,
-        message: "Wrong credentials.",
+        message: "Identifiants incorrects.",
       }),
     );
   }

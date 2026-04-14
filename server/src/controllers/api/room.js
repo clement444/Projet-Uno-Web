@@ -18,7 +18,7 @@ export function createRoom(ownerId, name, maxPlayers = 4) {
     throw new Error(
       JSON.stringify({
         status_code: 401,
-        message: "A room with this name already exists.",
+        message: "Ce nom existe déjà pour un salon.",
       }),
     );
   }
@@ -27,7 +27,7 @@ export function createRoom(ownerId, name, maxPlayers = 4) {
     throw new Error(
       JSON.stringify({
         status_code: 401,
-        message: "You can't create another room while being in one.",
+        message: "Vous ne pouvez créer un salon en étant déjà dans un salon.",
       }),
     );
 

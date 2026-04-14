@@ -156,8 +156,7 @@ document
     });
     const data = await res.json();
     if (!res.ok) {
-      msg.textContent = data.message || data.error;
-      msg.style.color = "#f87171";
+      msg.textContent = data.message;
       msg.hidden = false;
       return;
     }

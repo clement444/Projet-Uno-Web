@@ -41,10 +41,9 @@ tabRegister.addEventListener("click", () => {
   tabLogin.classList.remove("active");
 });
 
-function showMsg(id, text, isError) {
+function showMsg(id, text) {
   const el = document.getElementById(id);
   el.textContent = text;
-  el.style.color = isError ? "red" : "green";
   el.hidden = false;
 }
 
@@ -60,8 +59,7 @@ loginForm.addEventListener("submit", async (e) => {
   });
 
   const data = await res.json();
-  if (!res.ok)
-    return showMsg("login-msg", translateErrorMessage(data.message), true);
+  if (!res.ok) return showMsg("login-msg", data.message);
 
   localStorage.setItem("uno_token", data.token);
   localStorage.setItem("uno_username", username);
@@ -75,11 +73,7 @@ registerForm.addEventListener("submit", async (e) => {
   const confirm = document.getElementById("register-confirm").value;
 
   if (password !== confirm)
-    return showMsg(
-      "register-msg",
-      "Les mots de passe ne correspondent pas",
-      true,
-    );
+    return showMsg("register-msg", "Les mots de passe ne correspondent pas");
 
   const res = await fetch("/api/register", {
     method: "POST",
@@ -88,10 +82,9 @@ registerForm.addEventListener("submit", async (e) => {
   });
 
   const data = await res.json();
-  if (!res.ok)
-    return showMsg("register-msg", translateErrorMessage(data.message), true);
+  if (!res.ok) return showMsg("register-msg", data.message);
 
-  showMsg("register-msg", "Compte créé avec succès !", false);
+  showMsg("register-msg", "Compte créé avec succès !");
 
   localStorage.setItem("uno_token", data.token);
   localStorage.setItem("uno_username", username);
@@ -224,16 +217,3 @@ async function generateBackground() {
 }
 
 generateBackground();
-
-function translateErrorMessage(message) {
-  const translations = {
-    "Username and password is required.":
-      "Le nom d'utilisateur et le mot de passe sont requis.",
-    "Username too long.": "Le nom d'utilisateur est trop long.",
-    "Username already taken.": "Ce nom d'utilisateur est déjà utilisé.",
-    "Cannot create account.": "Impossible de créer le compte.",
-    "Wrong credentials.": "Identifiants incorrects.",
-  };
-
-  return translations[message] || message;
-}
