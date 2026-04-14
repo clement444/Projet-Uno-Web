@@ -63,6 +63,14 @@ ws.addEventListener("message", (event) => {
   if (msg.type === "direction_changed") {
     updateDirectionIndicator(msg.direction);
   }
+  if (msg.type === "card_drawn") {
+    if (msg.player_id !== myId) updateOpponentCount(msg.player_id, 1);
+  }
+  if (msg.type === "counter_uno") {
+    delete pendingUno[msg.target_id];
+    updateCounterUnoBtn();
+    if (msg.target_id !== myId) updateOpponentCount(msg.target_id, 2);
+  }
   if (msg.type === "player_disconnected") {
     const name = playerNames[msg.player_id] ?? `Joueur ${msg.player_id}`;
     showNotification(`${name} s'est déconnecté.`);
