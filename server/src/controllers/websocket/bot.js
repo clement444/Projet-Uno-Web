@@ -35,6 +35,11 @@ function playBotCard(game, room_id, wss, bot_id, card) {
     return;
   }
 
+  if (remaining.length === 1) {
+    game.unoPending.add(bot_id);
+    broadcast(wss, room_id, { type: "uno_declared", player_id: bot_id });
+  }
+
   let skip = false;
   const nextIdx = (game.currentIndex + game.direction + game.players.length) % game.players.length;
   const nextId = game.players[nextIdx];
