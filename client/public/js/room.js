@@ -12,13 +12,13 @@ document.getElementById("room-name").textContent = roomName || roomId;
 const startBtn = document.getElementById("start-btn");
 const waitingMsg = document.getElementById("waiting-msg");
 
-const ws = new WebSocket(`ws://${location.host}`, ["Authorization", token]);
+const ws = new WebSocket(`ws://${location.host}?token=${token}`);
 
 ws.addEventListener("open", () => {
   ws.send(
     JSON.stringify({
       type: "join_room",
-      room_id: roomId,
+      room_id: parseInt(roomId),
       player_id: username,
       name: username,
     }),
