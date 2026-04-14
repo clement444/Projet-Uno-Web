@@ -24,7 +24,6 @@ const playerNames = {};
 
 const unoBtn = document.getElementById("uno-btn");
 const counterUnoBtn = document.getElementById("counter-uno-btn");
-const jouerBtn = document.getElementById("jouer-btn");
 
 ws.addEventListener("open", () => {
   ws.send(JSON.stringify({ type: "join_room", room_id: parseInt(roomId), token }));
@@ -111,7 +110,6 @@ function renderTopCard(card) {
 function updateTurnIndicator(player_id) {
   isMyTurn = player_id === myId;
   document.getElementById("draw-btn").disabled = !isMyTurn;
-  jouerBtn.disabled = !isMyTurn;
   document.getElementById("turn-indicator").textContent = isMyTurn
     ? "C'est ton tour !"
     : `Tour de ${playerNames[player_id] ?? `joueur ${player_id}`}`;
@@ -247,10 +245,6 @@ counterUnoBtn.addEventListener("click", () => {
   counterUnoBtn.disabled = true;
 });
 
-jouerBtn.addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "draw_card" }));
-});
-
 document.getElementById("draw-btn").addEventListener("click", () => {
   ws.send(JSON.stringify({ type: "draw_card" }));
 });
@@ -293,7 +287,6 @@ function refreshDrawHighlight() {
   const noPlayable = isMyTurn &&
     !Array.from(document.querySelectorAll("#player-cards button")).some((b) => !b.disabled);
   document.getElementById("draw-btn").classList.toggle("draw-highlight", noPlayable);
-  jouerBtn.classList.toggle("draw-highlight", noPlayable);
   document.getElementById("no-card-hint").hidden = !noPlayable;
 }
 
