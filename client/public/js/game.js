@@ -60,7 +60,9 @@ ws.addEventListener("message", (event) => {
     if (el) el.remove();
   }
   if (msg.type === "game_over") {
-    alert(msg.winner_id === myId ? "Tu as gagné !" : `Partie terminée — gagnant : joueur ${msg.winner_id}`);
+    const text = msg.winner_id === myId ? "Tu as gagné !" : `Partie terminée — gagnant : joueur ${msg.winner_id}`;
+    showNotification(text);
+    setTimeout(() => { window.location.href = "/"; }, 4000);
   }
 });
 
