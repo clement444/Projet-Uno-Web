@@ -137,3 +137,23 @@ counterUnoBtn.addEventListener("click", () => {
 document.getElementById("draw-btn").addEventListener("click", () => {
   ws.send(JSON.stringify({ type: "draw_card" }));
 });
+
+function showNotification(text) {
+  const el = document.getElementById("notification");
+  el.textContent = text;
+  el.style.display = "block";
+  setTimeout(() => { el.style.display = "none"; }, 3000);
+}
+
+function updateOpponentCount(player_id, addedCount) {
+  const el = document.getElementById(`opponent-${player_id}`);
+  if (!el) return;
+  const match = el.textContent.match(/(\d+) carte/);
+  const current = match ? parseInt(match[1]) : 0;
+  el.textContent = el.textContent.replace(/\d+ carte\(s\)/, `${current + addedCount} carte(s)`);
+}
+
+function updateDirectionIndicator(direction) {
+  const el = document.getElementById("direction-indicator");
+  el.textContent = direction === 1 ? "Sens : →" : "Sens : ←";
+}
