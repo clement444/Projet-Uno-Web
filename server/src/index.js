@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import init_routes from "./routes/init_routes";
 import { logger_main } from "./utils/logger";
-import { createWebSocketServer } from "./controllers/websocket/index";
+import { createWebSocketServer } from "./controllers/websocket/websocket_server";
 
 export const app = express();
 const port = 3000;
@@ -12,7 +12,7 @@ app.use("/public", express.static(path.join(__dirname, "../../client/public")));
 
 init_routes();
 
-app.use((err, res) => {
+app.use((err, _req, res, _next) => {
   res.status(500).json({ message: "Internal Server Error" });
 });
 

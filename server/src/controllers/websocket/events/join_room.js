@@ -1,5 +1,5 @@
 import { broadcast } from "../broadcast.js";
-import { getRoomById, isPlayerInARoom } from "../../api/room.js";
+import { getRoomById } from "../../api/room.js";
 
 export function onJoinRoom(message, socket, wss) {
   const { room_id } = message;
@@ -17,12 +17,16 @@ export function onJoinRoom(message, socket, wss) {
     return;
   }
 
-  if (isPlayerInARoom(player_id)) {
-    socket.send(JSON.stringify({ error: "Déjà dans une room" }));
-    return;
-  }
-
   room.addPlayer(player_id);
   socket.room_id = room_id;
-  broadcast(wss, room_id, { type: "player_joined", room_id, player_id, name });
+  const updatedRoom = getRoomById(room_id);
+  if (!updatedRoom) return;
+
+  broadcast(wss, room_id, {
+    type: "player_joined",
+    room_id,
+    player_id,
+    name,
+    owner_id: updatedRoom.owner_id,
+  });
 }

@@ -2,6 +2,19 @@ import { Room } from "../../structures/game/room";
 import db from "../../utils/db";
 
 export function createRoom(ownerId, name, maxPlayers = 4) {
+  if (name.trim() == "") throw new Error("No name provided.");
+
+  const existing = db
+    .prepare("SELECT id FROM rooms WHERE name = ? LIMIT 1")
+    .get(name);
+
+  if (existing) {
+    throw new Error("A room with this name already exists.");
+  }
+
+  if (isPlayerInARoom(ownerId))
+    throw new Error("You can't create another room while being in one.");
+
   const stmt = db.prepare(
     "INSERT INTO rooms (owner_id, name, max_players) VALUES (?, ?, ?)",
   );
@@ -27,7 +40,7 @@ export function getRoomById(id) {
   const row = stmt.get(id);
   if (!row) return null;
 
-  const room = new Room(row.id, row.name, row.max_players);
+  const room = new Room(row.id, row.name, row.owner_id, row.max_players);
   room.player_count = row.player_count;
 
   return room;

@@ -10,12 +10,27 @@ import {
 } from "../../controllers/api/room";
 
 export default () => {
-  app.get("/api/room", check_auth, function (_, res) {
+  app.get("/api/room", check_auth, function (req, res) {
     logger_http.info("[GET] /api/room");
-    res.json(getAllRooms());
+
+    const room_id = req.id;
+
+    if (room_id) {
+      const room = getRoomById(room_id);
+
+      if (room.length < 1) {
+        res.status(404).json({ message: "No room for this id." });
+      } else {
+        res.status(200).json(room);
+      }
+    } else {
+      res.json(getAllRooms());
+    }
   });
 
   app.post("/api/room", check_auth, function (req, res) {
+    logger_http.info("[POST] /api/room");
+
     res.setHeader("Content-Type", "application/json");
     const body = req.body;
     const data = req.query;
@@ -29,14 +44,25 @@ export default () => {
 
       try {
         const isInARoom = isPlayerInARoom(user.id);
-        if (isInARoom)
-          return res.status(401).json({
-            message:
-              "You cannot join more than 1 room, leave your current room before joining a new one.",
+
+        if (isInARoom) {
+          return res.status(200).json({
+            id: room.id,
+            owner_id: room.owner_id,
+            name: room.name,
+            max_players: room.max_players,
+            isPlayerHost: true,
           });
+        }
 
         room.addPlayer(user.id);
-        return res.status(200).json(room);
+        return res.status(200).json({
+          id: room.id,
+          owner_id: room.owner_id,
+          name: room.name,
+          max_players: room.max_players,
+          isPlayerHost: room.owner_id == user.id,
+        });
       } catch (e) {
         switch (e) {
           case "Already in room":
@@ -62,21 +88,33 @@ export default () => {
         return res.status(400).json({ message: "You are not in the room." });
 
       room.removePlayer(user.id);
-      return res.status(200).json(room);
+      return res.status(200).json({
+        id: room.id,
+        name: room.name,
+      });
     }
 
-    const name = body.name;
-    const max_players = body.max_players;
+    try {
+      const room = createRoom(user.id, body.name, body.max_players);
+      if (!room)
+        return res.status(500).json({ message: "Unable to create the room." });
 
-    const room = createRoom(user.id, name, max_players);
-    if (!room)
-      return res.status(500).json({ message: "Unable to create the room." });
-
-    room.addPlayer(user.id);
-    return res.status(201).json(room);
+      room.addPlayer(user.id);
+      return res.status(201).json({
+        id: room.id,
+        owner_id: room.owner_id,
+        name: room.name,
+        max_players: room.max_players,
+        isPlayerHost: true,
+      });
+    } catch (e) {
+      return res.status(400).json({ message: e });
+    }
   });
 
   app.delete("/api/room", check_auth, function (req, res) {
+    logger_http.info("[DELETE] /api/room");
+
     res.setHeader("Content-Type", "application/json");
     const data = req.body;
     const room_id = data.room_id;

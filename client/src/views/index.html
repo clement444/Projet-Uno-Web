@@ -17,8 +17,8 @@
                     class="noselect"
             /></a>
         </header>
-        <main class="noselect">
-            <div id="logged-in-section" hidden>
+        <main>
+            <div id="logged-in-section" class="noselect" hidden>
                 <p>
                     Connecté en tant que <strong id="logged-username"></strong>
                 </p>
@@ -26,7 +26,7 @@
                 <button type="button" id="logout-btn">Se déconnecter</button>
             </div>
             <div id="auth-card">
-                <div id="auth-tabs">
+                <div id="auth-tabs" class="noselect">
                     <button type="button" id="tab-login" class="tab active">
                         Connexion
                     </button>
@@ -34,7 +34,7 @@
                         Créer un compte
                     </button>
                 </div>
-                <form id="login-form">
+                <form id="login-form" class="noselect">
                     <input
                         type="text"
                         id="login-username"
@@ -53,7 +53,7 @@
                     <button type="submit">Se connecter</button>
                     <p id="login-msg" hidden></p>
                 </form>
-                <form id="register-form" hidden>
+                <form id="register-form" class="noselect" hidden>
                     <input
                         type="text"
                         id="register-username"
@@ -81,7 +81,7 @@
                 </form>
             </div>
             <section id="rules">
-                <h2>Règles du jeu</h2>
+                <h2 class="noselect">Règles du jeu</h2>
                 <ul>
                     <li>Chaque joueur commence avec 7 cartes.</li>
                     <li>
