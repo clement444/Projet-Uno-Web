@@ -16,6 +16,7 @@ const COLOR_BG = { 0: "#333", 1: "#F63A3A", 2: "#565EF5", 3: "#5DF55D", 4: "#F5D
 const ws = new WebSocket(`ws://${location.host}?token=${token}`);
 let myId = null;
 const pendingUno = {};
+const playerNames = {};
 
 ws.addEventListener("open", () => {
   ws.send(JSON.stringify({ type: "join_room", room_id: parseInt(roomId) }));
@@ -29,7 +30,11 @@ ws.addEventListener("message", (event) => {
     updateTurnIndicator(msg.current_player_id);
   }
   if (msg.type === "hand_update") {
-    if (msg.your_id) myId = msg.your_id;
+    if (msg.your_id) {
+      myId = msg.your_id;
+      playerNames[myId] = username;
+    }
+    msg.opponents.forEach((p) => { playerNames[p.id] = p.username; });
     renderHand(msg.hand);
     renderOpponents(msg.opponents);
   }
@@ -83,7 +88,7 @@ function updateTurnIndicator(player_id) {
   document.getElementById("draw-btn").disabled = !isMyTurn;
   document.getElementById("turn-indicator").textContent = isMyTurn
     ? "C'est ton tour !"
-    : `Tour du joueur ${player_id}`;
+    : `Tour de ${playerNames[player_id] ?? `joueur ${player_id}`}`;
 }
 
 function renderHand(hand) {
@@ -123,7 +128,7 @@ function renderOpponents(opponents) {
   opponents.forEach((p) => {
     const li = document.createElement("li");
     li.id = `opponent-${p.id}`;
-    li.textContent = `Joueur ${p.id} — ${p.card_count} carte(s)`;
+    li.textContent = `${p.username ?? `Joueur ${p.id}`} — ${p.card_count} carte(s)`;
     list.appendChild(li);
   });
 }
