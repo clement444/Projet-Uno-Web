@@ -34,6 +34,8 @@ ws.addEventListener("open", () => {
 ws.addEventListener("message", (event) => {
   const msg = JSON.parse(event.data);
 
+  if (msg.error) { console.error("[WS error]", msg.error); return; }
+
   if (msg.type === "room_state") {
     msg.players.forEach((p) => addPlayer(p.username, p.id));
   }
