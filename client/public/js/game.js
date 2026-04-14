@@ -35,6 +35,7 @@ ws.addEventListener("message", (event) => {
   }
   if (msg.type === "card_played") {
     renderTopCard({ id: msg.card_id, color: msg.color });
+    if (msg.player_id !== myId) updateOpponentCount(msg.player_id, -1);
   }
   if (msg.type === "turn") {
     updateTurnIndicator(msg.player_id);
