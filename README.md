@@ -1,107 +1,95 @@
-# Uno Online – Spécification de projet
+# UNO Web – Projet étudiant
 
-## 1. Objectif du projet
-
-Créer une version en ligne du jeu **Uno** jouable dans un navigateur, avec :
-- **Parties en temps réel** via WebSocket
-- **Serveur Node.js / Express** pour l’API REST et le hosting
-- **Gestion multi-salles** (tables de jeu)
-- **Règles Uno classiques** (piocher, +2, +4, inversion, passe ton tour, changement de couleur, etc.)
+Application web multijoueur permettant de jouer au UNO en ligne, avec gestion des comptes, salons, salle d’attente et interface de jeu dynamique. Ce projet a été réalisé par **Thomas**, **Clément**, **Hugo** et **Damien**.
 
 ---
 
-## 2. Stack technique
+## Présentation du projet
 
-- **Backend**
-  - Node.js
-  - Express.js (API REST, statiques)
-  - WebSocket (Socket.IO ou `ws`)
-  - Gestion d’état en mémoire (au début), puis optionnellement Redis
+Le projet consiste à développer une application web permettant à plusieurs joueurs de se connecter, créer ou rejoindre un salon, patienter dans une salle d’attente, puis lancer une partie de UNO conforme aux règles classiques. L’interface est pensée pour être simple, intuitive et accessible.
 
-- **Frontend**
-  - HTML / CSS / JS (ou framework : React / Vue / Svelte au choix)
-  - Client WebSocket
-  - UI responsive (desktop + mobile)
-
-- **Outils & Qualité**
-  - TypeScript (optionnel mais recommandé)
-  - ESLint / Prettier
-  - Jest / Vitest pour les tests
-  - Docker (optionnel pour déploiement)
+L’architecture repose sur une base HTML, CSS et JavaScript côté client. Le backend utilise Bun pour l’exécution JavaScript et la gestion du serveur.
 
 ---
 
-## 3. Fonctionnalités principales
+## Fonctionnalités principales
 
-### 3.1 Joueur & Authentification légère
+### Authentification
+- Création de compte avec pseudo et mot de passe.
+- Connexion sécurisée.
+- Affichage du nom de l’utilisateur connecté.
+- Déconnexion.
 
-- **Pseudo invité** (pas de vraie auth au début)
-- Choix d’un **avatar** simple (couleur, icône)
-- Gestion d’un **ID de session** (cookie ou localStorage)
+### Lobby
+- Création de salons avec nom personnalisé.
+- Liste des salons disponibles.
+- Recherche par nom.
+- Filtre par nombre de joueurs.
+- Indication du nombre total de salons.
+- Rejoindre un salon existant.
+- Retour automatique vers son salon si l’utilisateur en possède déjà un.
 
-### 3.2 Salles & parties
+### Salle d’attente
+- Affichage du nom du salon.
+- Liste des joueurs présents.
+- Indication du nombre de joueurs (maximum 4).
+- Bouton de lancement de partie réservé à l’hôte.
+- Message d’attente pour les autres joueurs.
+- Possibilité de quitter le salon.
 
-- Créer une salle :
-  - Nom de salle
-  - Nombre max de joueurs (2–6)
-  - Option : règles spéciales (empilement +2/+4, 7-0, etc. pour plus tard)
-- Rejoindre une salle existante (liste des salles disponibles)
-- Lancer la partie quand il y a au moins 2 joueurs
-- Gestion de l’état de la salle :
-  - En attente
-  - En cours
-  - Terminée
+### Partie (selon implémentation backend)
+- Distribution automatique des cartes.
+- Gestion des tours.
+- Application des règles du UNO.
+- Gestion du UNO et du Contre-UNO.
+- Détection de la fin de partie.
 
-### 3.3 Mécanique de jeu Uno
+---
 
-- Distribution initiale (7 cartes / joueur)
-- Pioche centrale + défausse
-- Tour par tour :
-  - Joueur courant
-  - Vérification des coups valides (couleur, valeur, symbole)
+## Règles du jeu
+
+- Chaque joueur commence avec 7 cartes.
+- Une carte peut être jouée si elle correspond en couleur ou en chiffre.
 - Cartes spéciales :
-  - **+2** : prochain joueur pioche 2 cartes
-  - **+4** : prochain joueur pioche 4 cartes + choix de couleur
-  - **Inversion** : inverse le sens de jeu
-  - **Passe ton tour** : saute le prochain joueur
-  - **Changement de couleur** : choix de couleur
-- Gestion du **“UNO !”** :
-  - Si un joueur a 1 carte, il doit cliquer sur “UNO”
-  - Si oublié et dénoncé (feature future), pénalité (piocher 2 cartes)
-- Condition de victoire :
-  - Premier joueur à ne plus avoir de cartes
-  - Classement final (ordre de sortie)
+  - Passer : le joueur suivant passe son tour.
+  - Inverser : inverse le sens du jeu.
+  - +2 : le joueur suivant pioche deux cartes.
+  - Joker : choix libre de la couleur.
+  - Joker +4 : choix de la couleur et pioche de quatre cartes pour le joueur suivant.
+- Obligation de dire « UNO » lorsqu’il reste une carte.
+- Contre-UNO : si un joueur oublie de dire UNO, un adversaire peut le pénaliser de deux cartes.
+- Le premier joueur sans carte remporte la partie.
 
 ---
 
-## 4. Architecture globale
+## Technologies utilisées
 
-### 4.1 Vue d’ensemble
+- HTML5 pour la structure des pages.
+- CSS3 pour la mise en forme et le responsive design.
+- JavaScript pour les interactions et la gestion dynamique des salons.
+- Bun pour l’exécution du serveur et la gestion du backend.
 
-- **Client** :
-  - UI de lobby (liste des salles, création)
-  - UI de jeu (main du joueur, plateau, joueurs, chat)
-  - Communication temps réel via WebSocket
-- **Serveur** :
-  - API REST pour :
-    - Création / liste des salles
-    - Récupération d’infos de base
-  - WebSocket pour :
-    - Événements de jeu (piocher, jouer une carte, changement de tour)
-    - Synchronisation de l’état de la partie
-    - Chat en temps réel
+---
 
-### 4.2 Modèle de données (simplifié)
+## Installation et lancement
 
-#### Joueur
+### 1. Cloner le dépôt
+```bash
+https://github.com/clement444/Projet-Uno-Web
+cd Projet-Uno-Web
+```
 
-```ts
-type Player = {
-  id: string;
-  name: string;
-  avatarColor: string;
-  hand: Card[];
-  hasSaidUno: boolean;
-  isConnected: boolean;
-};
+### 2. Installer les dépendances
+```bash
+bun install
+```
+
+### 3. Lancer le serveur en mode dev
+```bash
+bun dev
+```
+
+### 4. Accéder à l’application
+```
+http://localhost:3000
 ```
