@@ -2,13 +2,12 @@ import db from "../../utils/db";
 import { generate_token } from "../../utils/auth";
 
 export async function createUser(req, res) {
-  const { username, password } = req.body;
-  if (
-    !username ||
-    !password ||
-    username.trim() === "" ||
-    password.trim() === ""
-  )
+  const { username, password } = cleanCredentials(
+    req.body.username,
+    req.body.password,
+  );
+
+  if (!username || !password)
     return res
       .status(400)
       .json({ message: "Username and password is required." });
@@ -66,3 +65,22 @@ export async function loginUser(req, res) {
 }
 
 export function removeUser() {}
+
+function cleanCredentials(username, password) {
+  const cleanupUsername = !username
+    ? null
+    : username.trim() === ""
+      ? null
+      : username.trim();
+
+  const cleanupPassword = !password
+    ? null
+    : password.trim() === ""
+      ? null
+      : password.trim();
+
+  return {
+    username: cleanupUsername,
+    password: cleanupPassword,
+  };
+}
