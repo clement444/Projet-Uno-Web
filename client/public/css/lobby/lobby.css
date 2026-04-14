@@ -110,6 +110,52 @@ header img {
     border-color: rgba(239, 68, 68, 0.3);
 }
 
+#browse-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#room-total {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 2px 8px;
+}
+
+#my-room-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#my-room-btn {
+    padding: 12px;
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: "Inter", sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 16px rgba(99, 62, 237, 0.35);
+    letter-spacing: 0.01em;
+}
+
+#my-room-btn:hover {
+    opacity: 0.9;
+    box-shadow: 0 6px 24px rgba(99, 62, 237, 0.5);
+}
+
 main {
     width: 420px;
     padding-bottom: 3em;

@@ -15,6 +15,11 @@ export default () => {
 
     const room_id = req.id;
 
+    if (req.query.mine) {
+      const room = getAllRooms().find((r) => r.owner_id === req.user.id) ?? null;
+      return res.status(200).json(room);
+    }
+
     if (room_id) {
       const room = getRoomById(room_id);
 
@@ -94,10 +99,14 @@ export default () => {
       });
     }
 
+    if (isPlayerInARoom(user.id)) {
+      return res.status(400).json({ message: "Vous avez déjà un salon actif. Supprimez-le avant d'en créer un nouveau." });
+    }
+
     try {
       const room = createRoom(user.id, body.name, body.max_players);
       if (!room)
-        return res.status(500).json({ message: "Unable to create the room." });
+        return res.status(500).json({ message: "Impossible de créer le salon." });
 
       room.addPlayer(user.id);
       return res.status(201).json({
