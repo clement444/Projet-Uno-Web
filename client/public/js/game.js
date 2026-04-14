@@ -126,6 +126,7 @@ function updateTurnIndicator(player_id) {
       btn.classList.toggle("card-playable", playable);
     }
   });
+  refreshDrawHighlight();
 }
 
 function isCardPlayable(card) {
@@ -165,6 +166,7 @@ function renderHand(hand) {
     list.appendChild(li);
   });
   updateUnoBtn(hand.length);
+  refreshDrawHighlight();
 }
 
 
@@ -285,6 +287,14 @@ function updateOpponentCount(player_id, delta) {
   if (!data) return;
   data.card_count = Math.max(0, data.card_count + delta);
   renderOpponent(player_id);
+}
+
+function refreshDrawHighlight() {
+  const noPlayable = isMyTurn &&
+    !Array.from(document.querySelectorAll("#player-cards button")).some((b) => !b.disabled);
+  document.getElementById("draw-btn").classList.toggle("draw-highlight", noPlayable);
+  jouerBtn.classList.toggle("draw-highlight", noPlayable);
+  document.getElementById("no-card-hint").hidden = !noPlayable;
 }
 
 function updateDirectionIndicator(direction) {
