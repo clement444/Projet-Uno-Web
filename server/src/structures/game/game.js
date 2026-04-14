@@ -103,6 +103,15 @@ export class Game {
       return { gameOver: true, winner_id: this.players[0] ?? null };
     }
 
+    if (idx < this.currentIndex) {
+      this.currentIndex--;
+    } else if (idx === this.currentIndex) {
+      this.currentIndex = this.currentIndex % this.players.length;
+    }
+
+    db.prepare("UPDATE parties SET current_player_id = ? WHERE id = ?")
+      .run(this.players[this.currentIndex], this.party_id);
+
     return { gameOver: false, nextPlayer: this.players[this.currentIndex] };
   }
 
