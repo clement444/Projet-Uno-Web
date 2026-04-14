@@ -51,11 +51,12 @@ export class Game {
   getOpponentState(exclude_id) {
     return this.players
       .filter((id) => id !== exclude_id)
-      .map((id) => ({
-        id,
-        card_count: db.prepare("SELECT COUNT(*) AS count FROM player_deck WHERE party_id = ? AND user_id = ?")
-          .get(this.party_id, id).count,
-      }));
+      .map((id) => {
+        const user = db.prepare("SELECT username FROM users WHERE id = ?").get(id);
+        const card_count = db.prepare("SELECT COUNT(*) AS count FROM player_deck WHERE party_id = ? AND user_id = ?")
+          .get(this.party_id, id).count;
+        return { id, username: user?.username ?? `Joueur ${id}`, card_count };
+      });
   }
 
   isPlayable(card) {
