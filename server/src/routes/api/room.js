@@ -7,6 +7,7 @@ import {
   getAllRooms,
   getRoomById,
   isPlayerInARoom,
+  playerCurrentRoomId,
 } from "../../controllers/api/room";
 
 export default () => {
@@ -22,6 +23,7 @@ export default () => {
         id: room.id,
         owner_id: room.owner_id,
         name: room.name,
+        players: room.getPlayers(),
         max_players: room.max_players,
       });
     }
@@ -32,12 +34,21 @@ export default () => {
       if (room.length < 1) {
         res.status(404).json({ message: "Salon inexistant." });
       } else {
-        res.status(200).json({
-          id: room.id,
-          owner_id: room.owner_id,
-          name: room.name,
-          max_players: room.max_players,
-        });
+        const currentRoomId = playerCurrentRoomId(req.user.id);
+        if (currentRoomId === req.user.room_id) {
+          return res.status(200).json({
+            id: room.id,
+            owner_id: room.owner_id,
+            name: room.name,
+            players: room.getPlayers(),
+            max_players: room.max_players,
+          });
+        } else {
+          return res.status(401).json({
+            message:
+              "Vous n'êtes pas dans le salon, donc vous ne pouvez voir ses informations.",
+          });
+        }
       }
     } else {
       res.json(getAllRooms());

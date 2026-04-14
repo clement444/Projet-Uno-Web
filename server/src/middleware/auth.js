@@ -1,3 +1,4 @@
+import { playerCurrentRoomId } from "../controllers/api/room";
 import { verify_token } from "../utils/auth";
 import db from "../utils/db";
 
@@ -14,7 +15,9 @@ export function check_auth(req, res, next) {
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
+
     req.user = user;
+    req.user.room_id = playerCurrentRoomId(user.id);
     next();
   } catch {
     res.status(401).json({ message: "Invalid or expired token" });

@@ -63,7 +63,10 @@ export function getRoomById(id) {
 export function getAllRooms() {
   const stmt = db.prepare(`
     SELECT
-      rooms.*,
+      rooms.id,
+      rooms.owner_id,
+      rooms.name,
+      rooms.max_players,
       COUNT(room_players.id) AS player_count
     FROM rooms
     LEFT JOIN room_players
@@ -85,4 +88,12 @@ export function isPlayerInARoom(player_id) {
     .get(player_id);
 
   return !!row;
+}
+
+export function playerCurrentRoomId(player_id) {
+  const row = db
+    .query("SELECT room_id FROM room_players WHERE user_id = ? LIMIT 1")
+    .get(player_id);
+
+  return row ? row.room_id : null;
 }

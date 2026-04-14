@@ -7,7 +7,8 @@ const isHost = localStorage.getItem("uno_is_host") === "true";
 if (!token || !roomId) window.location.href = "/";
 
 document.getElementById("current-username").textContent = username;
-document.getElementById("room-name").textContent = roomName || roomId;
+document.getElementById("room-name").textContent =
+  roomName === "undefined" ? "-" : roomName;
 
 const startBtn = document.getElementById("start-btn");
 const waitingMsg = document.getElementById("waiting-msg");
@@ -29,6 +30,7 @@ ws.addEventListener("message", (event) => {
   console.log(event);
   const msg = JSON.parse(event.data);
 
+  if (msg.type === "room_not_found") window.location.href = "/lobby";
   if (msg.type === "player_joined") addPlayer(msg.name, msg.player_id);
   if (msg.type === "player_left") removePlayer(msg.player_id);
   if (msg.type === "player_disconnected") removePlayer(msg.player_id);

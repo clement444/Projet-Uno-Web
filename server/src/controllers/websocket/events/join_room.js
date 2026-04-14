@@ -6,9 +6,13 @@ export function onJoinRoom(message, socket, wss) {
   const { room_id, player_id, name } = message;
   socket.room_id = room_id;
   const room = getRoomById(room_id);
-  if (!room) return;
-
-  room.addPlayer(player_id);
+  if (!room) {
+    return socket.send(
+      JSON.stringify({
+        type: "room_not_found",
+      }),
+    );
+  }
 
   socket.send(
     JSON.stringify({
