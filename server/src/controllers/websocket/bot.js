@@ -21,7 +21,7 @@ function playBotCard(game, room_id, wss, bot_id, card) {
   const isWild = [11, 12].includes(card.card_id);
   const color = isWild ? (Math.floor(Math.random() * 4) + 1) : null;
 
-  game.playCard(bot_id, card.card_id, color);
+  game.playCard(bot_id, card.id, color);
   broadcast(wss, room_id, {
     type: "card_played",
     player_id: bot_id,
