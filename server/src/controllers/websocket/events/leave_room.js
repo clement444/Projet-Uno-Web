@@ -1,5 +1,6 @@
 import { broadcast } from "../broadcast.js";
 import { getRoomById } from "../../api/room.js";
+import { getGame, deleteGame } from "../gameManager.js";
 
 export function onLeaveRoom(_message, socket, wss) {
   const room_id = socket.room_id;
@@ -21,6 +22,8 @@ export function onLeaveRoom(_message, socket, wss) {
     socket.send(JSON.stringify({ error: "Pas dans cette room" }));
     return;
   }
+
+  if (getGame(room_id)) deleteGame(room_id);
 
   room.removePlayer(player_id);
   socket.room_id = null;
