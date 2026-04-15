@@ -62,6 +62,80 @@
         letter-spacing: 0.2px;
         margin: 0;
       }
+
+      /* ── Écran de résultat ── */
+      #game-result-overlay:not([hidden]) {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+      }
+      #result-canvas {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      #result-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        animation: result-pop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      @keyframes result-pop {
+        from { transform: scale(0.3) translateY(40px); opacity: 0; }
+        to   { transform: scale(1)   translateY(0);    opacity: 1; }
+      }
+      #result-icon {
+        font-size: 90px;
+        line-height: 1;
+        margin-bottom: 20px;
+        animation: icon-float 2.2s ease-in-out infinite;
+      }
+      @keyframes icon-float {
+        0%, 100% { transform: translateY(0);    }
+        50%       { transform: translateY(-14px); }
+      }
+      #result-title {
+        font-size: 76px;
+        font-weight: 900;
+        margin: 0 0 16px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      @keyframes title-shine {
+        0%, 100% { text-shadow: 0 0 40px rgba(255,215,0,.9), 0 0 80px rgba(255,215,0,.5); }
+        50%       { text-shadow: 0 0 70px rgba(255,215,0,1),  0 0 140px rgba(255,215,0,.8); }
+      }
+      @keyframes title-flicker {
+        0%, 88%, 90%, 92%, 100% { opacity: 1;   }
+        89%, 91%                { opacity: 0.4; }
+      }
+      #result-subtitle {
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.75);
+        margin: 0 0 40px;
+        max-width: 500px;
+      }
+      #result-home-btn {
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        padding: 14px 44px;
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      }
+      #result-home-btn:hover {
+        background: rgba(255, 255, 255, 0.22);
+        border-color: rgba(255, 255, 255, 0.85);
+        transform: scale(1.06);
+      }
     </style>
   </head>
   <body>
@@ -110,6 +184,15 @@
         <button data-color="2" style="background:#565EF5" aria-label="Bleu">Bleu</button>
         <button data-color="3" style="background:#5DF55D" aria-label="Vert">Vert</button>
         <button data-color="4" style="background:#F5D55D" aria-label="Jaune">Jaune</button>
+      </div>
+    </div>
+    <div id="game-result-overlay" hidden>
+      <canvas id="result-canvas"></canvas>
+      <div id="result-content">
+        <div id="result-icon"></div>
+        <h1 id="result-title"></h1>
+        <p id="result-subtitle"></p>
+        <button id="result-home-btn">Retour à l'accueil</button>
       </div>
     </div>
     <script src="/public/js/game.js"></script>
