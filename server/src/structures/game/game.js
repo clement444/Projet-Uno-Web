@@ -115,15 +115,15 @@ export class Game {
     return { gameOver: false, nextPlayer: this.players[this.currentIndex] };
   }
 
-  playCard(player_id, card_id, new_color = null) {
+  playCard(player_id, row_id, new_color = null) {
     const row = db.prepare(
-      "SELECT id, card_id, color FROM player_deck WHERE party_id = ? AND user_id = ? AND card_id = ? LIMIT 1"
-    ).get(this.party_id, player_id, card_id);
+      "SELECT id, card_id, color FROM player_deck WHERE id = ? AND party_id = ? AND user_id = ?"
+    ).get(row_id, this.party_id, player_id);
     if (!row) return null;
     db.prepare("DELETE FROM player_deck WHERE id = ?").run(row.id);
     const color = new_color ?? row.color;
     db.prepare("UPDATE parties SET last_card_played = ?, color = ? WHERE id = ?")
-      .run(card_id, color, this.party_id);
+      .run(row.card_id, color, this.party_id);
     return { id: row.card_id, color: row.color };
   }
 }
