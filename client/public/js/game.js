@@ -87,10 +87,9 @@ ws.addEventListener("message", (event) => {
     if (el) el.remove();
   }
   if (msg.type === "game_over") {
+    const won = msg.winner_id === myId;
     const name = playerNames[msg.winner_id] ?? `Joueur ${msg.winner_id}`;
-    const text = msg.winner_id === myId ? "Tu as gagné !" : `Partie terminée — gagnant : ${name}`;
-    showNotification(text);
-    setTimeout(() => { window.location.href = "/"; }, 4000);
+    showGameResult(won, name);
   }
 });
 
@@ -294,4 +293,148 @@ function refreshDrawHighlight() {
 function updateDirectionIndicator(direction) {
   const el = document.getElementById("direction-indicator");
   el.textContent = direction === 1 ? "Sens : →" : "Sens : ←";
+}
+
+function showGameResult(won, winnerName) {
+  const overlay = document.getElementById("game-result-overlay");
+  const canvas  = document.getElementById("result-canvas");
+  const icon     = document.getElementById("result-icon");
+  const title    = document.getElementById("result-title");
+  const subtitle = document.getElementById("result-subtitle");
+
+  overlay.style.background = won ? "rgba(0,0,0,0.78)" : "rgba(8,0,0,0.92)";
+  icon.textContent     = won ? "🏆" : "💀";
+  title.textContent    = won ? "Victoire !" : "Défaite";
+  title.style.color    = won ? "#FFD700" : "#cc2222";
+  title.style.animation = won ? "title-shine 2s ease-in-out infinite" : "title-flicker 5s 0.8s infinite";
+  subtitle.textContent = won
+    ? "Bravo, tu as remporté la partie !"
+    : `Bien joué à ${winnerName} — meilleure chance la prochaine fois !`;
+
+  overlay.hidden = false;
+
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const stop = won ? startConfetti(canvas) : startAsh(canvas);
+
+  document.getElementById("result-home-btn").addEventListener("click", () => {
+    stop();
+    window.location.href = "/";
+  }, { once: true });
+
+  setTimeout(() => { stop(); window.location.href = "/"; }, 8000);
+}
+
+function startConfetti(canvas) {
+  const ctx = canvas.getContext("2d");
+  const COLORS = ["#F63A3A","#565EF5","#5DF55D","#F5D55D","#FF9500","#FF69B4","#00CFFF","#FFFFFF"];
+
+  const pieces = Array.from({ length: 140 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * -canvas.height,
+    w: Math.random() * 14 + 5,
+    h: Math.random() * 7 + 3,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    rot: Math.random() * Math.PI * 2,
+    rotV: (Math.random() - 0.5) * 0.18,
+    vx: (Math.random() - 0.5) * 3,
+    vy: Math.random() * 3 + 2,
+    shape: Math.random() > 0.4 ? "rect" : "circle",
+  }));
+
+  const bursts = [];
+  const burstTimer = setInterval(() => {
+    const bx = canvas.width  * 0.1 + Math.random() * canvas.width  * 0.8;
+    const by = canvas.height * 0.1 + Math.random() * canvas.height * 0.45;
+    const bc = COLORS[Math.floor(Math.random() * COLORS.length)];
+    for (let i = 0; i < 30; i++) {
+      const angle = (i / 30) * Math.PI * 2;
+      const spd   = Math.random() * 7 + 3;
+      bursts.push({
+        x: bx, y: by,
+        vx: Math.cos(angle) * spd,
+        vy: Math.sin(angle) * spd,
+        color: bc,
+        size: Math.random() * 5 + 2,
+        life: 1,
+        decay: 0.016 + Math.random() * 0.012,
+      });
+    }
+  }, 1400);
+
+  let frame;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (const p of pieces) {
+      p.x += p.vx; p.y += p.vy; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.y = -20; p.x = Math.random() * canvas.width; }
+      ctx.save();
+      ctx.globalAlpha = 0.9;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      if (p.shape === "circle") {
+        ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
+      ctx.restore();
+    }
+
+    for (let i = bursts.length - 1; i >= 0; i--) {
+      const b = bursts[i];
+      b.x  += b.vx; b.y += b.vy;
+      b.vy += 0.15; b.vx *= 0.97;
+      b.life -= b.decay;
+      if (b.life <= 0) { bursts.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = b.life;
+      ctx.fillStyle = b.color;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.size * b.life, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    frame = requestAnimationFrame(draw);
+  }
+  draw();
+
+  return () => { clearInterval(burstTimer); cancelAnimationFrame(frame); };
+}
+
+function startAsh(canvas) {
+  const ctx = canvas.getContext("2d");
+  const COLORS = ["#3a1010","#4a0808","#2a0000","#550000","#1a1a1a","#662200"];
+
+  const embers = Array.from({ length: 90 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    w: Math.random() * 3 + 1,
+    h: Math.random() * 22 + 8,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    rot: -Math.PI / 6 + (Math.random() - 0.5) * 0.4,
+    vx: -0.6 + (Math.random() - 0.5) * 0.4,
+    vy: Math.random() * 3 + 1.5,
+    opacity: Math.random() * 0.45 + 0.15,
+  }));
+
+  let frame;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of embers) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.y > canvas.height + 20) { p.y = -20; p.x = Math.random() * canvas.width; }
+      ctx.save();
+      ctx.globalAlpha = p.opacity;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    frame = requestAnimationFrame(draw);
+  }
+  draw();
+
+  return () => cancelAnimationFrame(frame);
 }
