@@ -4,7 +4,7 @@ import { getGame, isBotPlayer } from "../gameManager.js";
 import { playBotTurn } from "../bot.js";
 
 export function onPlayCard(message, socket, wss) {
-  const { card_id, color } = message;
+  const { card_id, row_id, color } = message;
   const room_id = socket.room_id;
   const player_id = socket.user.id;
 
@@ -35,7 +35,7 @@ export function onPlayCard(message, socket, wss) {
   }
 
   const hand = game.getHand(player_id);
-  const cardRow = hand.find((c) => c.card_id === card_id);
+  const cardRow = hand.find((c) => c.id === row_id);
   if (!cardRow) {
     socket.send(JSON.stringify({ error: "Carte introuvable dans ta main" }));
     return;
@@ -52,7 +52,7 @@ export function onPlayCard(message, socket, wss) {
     return;
   }
 
-  const played = game.playCard(player_id, card_id, isWild ? color : null);
+  const played = game.playCard(player_id, row_id, isWild ? color : null);
   if (!played) {
     socket.send(JSON.stringify({ error: "Erreur lors du jeu de la carte" }));
     return;
