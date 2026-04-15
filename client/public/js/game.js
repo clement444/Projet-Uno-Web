@@ -146,13 +146,14 @@ function renderHand(hand) {
     btn.disabled = !isMyTurn || !playable;
     btn.dataset.cardId = card.card_id;
     btn.dataset.color = card.color;
+    btn.dataset.rowId = card.id;
     btn.classList.toggle("card-playable", playable);
     const img = document.createElement("img");
     img.src = `/public/assets/cards/${CARD_ASSETS[card.card_id]}.svg`;
     img.alt = CARD_ASSETS[card.card_id];
     btn.appendChild(img);
     btn.addEventListener("click", async () => {
-      const payload = { type: "play_card", card_id: card.card_id };
+      const payload = { type: "play_card", card_id: card.card_id, row_id: card.id };
       if ([11, 12].includes(card.card_id)) {
         const color = await askColor();
         if (!color) return;
