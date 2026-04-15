@@ -1,5 +1,5 @@
 import { broadcast, sendToPlayer } from "./broadcast.js";
-import { isBotPlayer } from "./gameManager.js";
+import { isBotPlayer, getGame } from "./gameManager.js";
 
 export function playBotTurn(game, room_id, wss) {
   const bot_id = game.getCurrentPlayer();
@@ -69,6 +69,9 @@ function playBotCard(game, room_id, wss, bot_id, card) {
 
 function triggerNextBotIfNeeded(game, room_id, wss) {
   if (isBotPlayer(room_id, game.getCurrentPlayer())) {
-    setTimeout(() => playBotTurn(game, room_id, wss), 1500);
+    setTimeout(() => {
+      if (!getGame(room_id)) return;
+      playBotTurn(game, room_id, wss);
+    }, 1500);
   }
 }
