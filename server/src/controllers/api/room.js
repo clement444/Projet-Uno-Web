@@ -1,3 +1,4 @@
+import { getRoomBots } from "../../structures/game/bot";
 import { Room } from "../../structures/game/room";
 import db from "../../utils/db";
 
@@ -39,12 +40,11 @@ export function createRoom(ownerId, name, maxPlayers = 4) {
   return getRoomById(info.lastInsertRowid);
 }
 
-
 export function getRoomById(id) {
   const stmt = db.prepare(`
     SELECT
       rooms.*,
-      COUNT(room_players.id) AS player_count
+      COUNT(room_players.id) AS participants_count
     FROM rooms
     LEFT JOIN room_players
       ON rooms.id = room_players.room_id
@@ -56,11 +56,10 @@ export function getRoomById(id) {
   if (!row) return null;
 
   const room = new Room(row.id, row.name, row.owner_id, row.max_players);
-  room.player_count = row.player_count;
+  room.participants_count = room.getParticipants().length;
 
   return room;
 }
-
 
 export function getAllRooms() {
   const stmt = db.prepare(`
@@ -69,7 +68,7 @@ export function getAllRooms() {
       rooms.owner_id,
       rooms.name,
       rooms.max_players,
-      COUNT(room_players.id) AS player_count
+      COUNT(room_players.id) AS participants_count
     FROM rooms
     LEFT JOIN room_players
       ON rooms.id = room_players.room_id

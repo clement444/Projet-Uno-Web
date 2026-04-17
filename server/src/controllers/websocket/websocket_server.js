@@ -33,7 +33,7 @@ export function createWebSocketServer(httpServer) {
         return;
       }
 
-      socket.user = user;
+      socket.user_id = user.id;
     } catch {
       socket.close(4001, "Invalid token.");
       return;

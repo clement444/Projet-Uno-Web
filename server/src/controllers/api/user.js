@@ -53,6 +53,14 @@ export async function createUser(username, password) {
   }
 }
 
+export async function getUser(user_id) {
+  const row = db
+    .query("SELECT id, username FROM users WHERE id = ?")
+    .get(user_id);
+
+  return row || null;
+}
+
 export async function loginUser(username, password) {
   const { username: clean_username, password: clean_password } =
     cleanCredentials(username, password);

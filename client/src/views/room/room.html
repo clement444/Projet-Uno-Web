@@ -34,7 +34,7 @@
                             d="M14 14a5 5 0 0 1 5 5v1a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-1a5 5 0 0 1 5 -5h4z"
                         />
                     </svg>
-                    <span id="current-username"></span>
+                    <span id="current-username">-</span>
                 </div>
                 <button type="button" id="leave-btn">Quitter le salon</button>
             </div>
@@ -44,15 +44,17 @@
                 <div id="room-header">
                     <div id="room-title">
                         <h2>Salon</h2>
-                        <p id="room-name"></p>
+                        <p id="room-name">-</p>
                     </div>
-                    <span id="player-count">- / 4</span>
+                    <span id="player-count">- / -</span>
                 </div>
                 <ul id="players"></ul>
             </section>
             <section id="action-section">
                 <div id="host-actions" hidden>
-                    <button type="button" id="add-bot-btn">Ajouter un bot</button>
+                    <button type="button" id="add-bot-btn">
+                        Ajouter un bot
+                    </button>
                     <button type="button" id="start-btn">
                         Lancer la partie
                     </button>

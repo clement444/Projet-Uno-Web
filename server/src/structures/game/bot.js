@@ -38,20 +38,20 @@ export function isBot(player_id) {
 
 // ── IA du bot ────────────────────────────────────────────────────────────────
 
-const CARD_PLUS2   = 10;
-const CARD_PLUS4   = 11;
-const CARD_WILD    = 12;
-const CARD_BLOCK   = 13;
+const CARD_PLUS2 = 10;
+const CARD_PLUS4 = 11;
+const CARD_WILD = 12;
+const CARD_BLOCK = 13;
 const CARD_REVERSE = 14;
-const COLORS       = [1, 2, 3, 4];
+const COLORS = [1, 2, 3, 4];
 
 function scorePriority(card) {
   // Priorité : jouer les cartes spéciales en premier (plus de valeur stratégique)
-  if (card.card_id === CARD_PLUS4)   return 100;
-  if (card.card_id === CARD_PLUS2)   return 90;
-  if (card.card_id === CARD_BLOCK)   return 80;
+  if (card.card_id === CARD_PLUS4) return 100;
+  if (card.card_id === CARD_PLUS2) return 90;
+  if (card.card_id === CARD_BLOCK) return 80;
   if (card.card_id === CARD_REVERSE) return 70;
-  if (card.card_id === CARD_WILD)    return 60;
+  if (card.card_id === CARD_WILD) return 60;
   return card.card_id; // 0-9
 }
 
@@ -61,7 +61,11 @@ function chooseBestCard(game, bot_id) {
 
   for (let i = 0; i < hand.length; i++) {
     if (game.canPlay(hand[i])) {
-      playable.push({ index: i, card: hand[i], priority: scorePriority(hand[i]) });
+      playable.push({
+        index: i,
+        card: hand[i],
+        priority: scorePriority(hand[i]),
+      });
     }
   }
 
@@ -112,7 +116,8 @@ function playBotTurn(game, bot_id, wss) {
 
   if (best) {
     // Choisir une couleur si c'est un wild
-    const isWild = best.card.card_id === CARD_WILD || best.card.card_id === CARD_PLUS4;
+    const isWild =
+      best.card.card_id === CARD_WILD || best.card.card_id === CARD_PLUS4;
     const chosen_color = isWild ? chooseColor(game.handOf(bot_id)) : null;
 
     const result = game.playCard(bot_id, best.index, chosen_color);

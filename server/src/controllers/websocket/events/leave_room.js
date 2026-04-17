@@ -7,7 +7,10 @@ export function onLeaveRoom(message, socket, wss) {
   if (!room) return;
 
   room.removePlayer(player_id);
-
-  broadcast(wss, room_id, { type: "player_left", room_id, player_id });
   socket.room_id = null;
+
+  broadcast(wss, room_id, {
+    type: "player_left",
+    player_id: socket.user_id,
+  });
 }

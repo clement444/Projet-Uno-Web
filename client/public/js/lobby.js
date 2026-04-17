@@ -46,7 +46,7 @@ function applyFilters() {
     const matchName = room.name.toLowerCase().includes(query);
     const matchCount =
       activePlayerFilter === "all" ||
-      room.player_count === parseInt(activePlayerFilter);
+      room.participants_count === parseInt(activePlayerFilter);
     return matchName && matchCount;
   });
 
@@ -67,7 +67,7 @@ function renderRooms(filtered) {
     const li = document.createElement("li");
     li.innerHTML = `
       <span class="room-name">${room.name}</span>
-      <span class="room-count">${room.player_count}/${room.max_players}</span>
+      <span class="room-count">${room.participants_count}/${room.max_players}</span>
     `;
     li.addEventListener("click", () => joinRoom(room.id, room.name));
     list.appendChild(li);
@@ -156,12 +156,8 @@ document
     });
     const data = await res.json();
     if (!res.ok) {
-<<<<<<< HEAD
       msg.textContent = data.message;
-=======
-      msg.textContent = data.message || data.error;
       msg.style.color = "#f87171";
->>>>>>> cdf9e449dd5445f75d8e1b594ce72d790e5abf29
       msg.hidden = false;
       return;
     }
@@ -195,7 +191,7 @@ function showMyRoom() {
 
   document.getElementById("my-room-name").textContent = myRoom.name;
   document.getElementById("my-room-count").textContent =
-    `${myRoom.player_count} / ${myRoom.max_players}`;
+    `${myRoom.participants_count} / ${myRoom.max_players}`;
   document.getElementById("my-room-section").hidden = false;
 
   document.getElementById("my-room-btn").addEventListener("click", () => {

@@ -305,6 +305,7 @@ section {
 .badge-bot {
     background: rgba(46, 204, 113, 0.12);
     border: 1px solid rgba(46, 204, 113, 0.25);
+    align-self: center;
     color: #2ecc71;
 }
 
