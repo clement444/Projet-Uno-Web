@@ -14,7 +14,7 @@ export default () => {
   app.get("/api/room", check_auth, function (req, res) {
     logger_http.info("[GET] /api/room");
 
-    const room_id = req.id;
+    const room_id = req.query.id;
 
     if (req.query.mine) {
       const room =
@@ -167,5 +167,14 @@ export default () => {
     deleteRoom(room_id);
 
     res.status(200).json({ message: "Salon supprimé." });
+  });
+
+  // Endpoint pour récupérer une room spécifique
+  app.get("/api/room/:id", check_auth, function (req, res) {
+    const room = getRoomById(req.params.id);
+    if (!room) {
+      return res.status(404).json({ message: "Room not found." });
+    }
+    res.json(room);
   });
 };

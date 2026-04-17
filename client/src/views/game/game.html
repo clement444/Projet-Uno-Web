@@ -1,36 +1,96 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Uno - Partie</title>
+    <link rel="stylesheet" href="/public/css/game/game.css" />
   </head>
   <body>
-    <header style="text-align: center">
-      <a href="/"><img src="/public/images/logo.png" alt="Uno" width="250" /></a>
-      <span id="room-name"></span>
-      <span id="current-player-name"></span>
+
+    <!-- ── Overlay : choix de couleur ───────────────────────────────────── -->
+    <div id="color-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <p class="modal-title">Choisissez une couleur</p>
+        <div class="color-grid">
+          <button class="color-btn" data-color="1" style="background:#e74c3c;" aria-label="Rouge"></button>
+          <button class="color-btn" data-color="2" style="background:#f1c40f;" aria-label="Jaune"></button>
+          <button class="color-btn" data-color="3" style="background:#2ecc71;" aria-label="Vert"></button>
+          <button class="color-btn" data-color="4" style="background:#3498db;" aria-label="Bleu"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Overlay : fin de partie ──────────────────────────────────────── -->
+    <div id="gameover-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <p id="gameover-title" class="modal-title"></p>
+        <p id="gameover-sub" class="modal-sub"></p>
+        <button id="back-lobby-btn" class="btn-primary">Retour au lobby</button>
+      </div>
+    </div>
+
+    <!-- ── Header ───────────────────────────────────────────────────────── -->
+    <header>
+      <a href="/"><img src="/public/images/logo.png" alt="Uno" class="noselect" draggable="false" /></a>
+      <div id="user-display" class="noselect">
+        <div id="user-info">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="user-icon">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M12 2a5 5 0 1 1 -5 5l.005 -.217a5 5 0 0 1 4.995 -4.783z"/>
+            <path d="M14 14a5 5 0 0 1 5 5v1a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-1a5 5 0 0 1 5 -5h4z"/>
+          </svg>
+          <span id="current-player-name"></span>
+        </div>
+        <div id="turn-badge">En attente…</div>
+      </div>
     </header>
+
+    <!-- ── Main ─────────────────────────────────────────────────────────── -->
     <main>
-      <section id="opponents">
+
+      <!-- Adversaires -->
+      <section id="opponents-section">
         <ul id="opponent-list"></ul>
       </section>
-      <section id="board">
-        <div id="draw-pile">
-          <button id="draw-btn">Piocher</button>
+
+      <!-- Plateau -->
+      <section id="board-section">
+
+        <!-- Défausse -->
+        <div id="discard-area">
+          <div id="current-card" class="card-slot">
+            <span class="slot-label">Défausse</span>
+          </div>
+          <div id="color-indicator"></div>
         </div>
-        <div id="discard-pile">
-          <div id="current-card"></div>
+
+        <!-- Pioche -->
+        <div id="draw-area">
+          <button id="draw-btn" class="draw-pile noselect" disabled>
+            <img src="/public/assets/cards/uno_recto.svg" alt="Piocher" draggable="false" />
+            <span>Piocher</span>
+          </button>
         </div>
+
       </section>
-      <section id="hand">
+
+      <!-- Main du joueur -->
+      <section id="hand-section">
         <ul id="player-cards"></ul>
       </section>
-      <section id="uno-actions">
-        <button id="uno-btn" disabled>UNO !</button>
-        <button id="counter-uno-btn" disabled>Contre UNO</button>
+
+      <!-- Actions UNO -->
+      <section id="uno-section">
+        <button id="uno-btn" class="btn-uno" disabled>UNO !</button>
+        <button id="counter-uno-btn" class="btn-counter" disabled>Contrer UNO</button>
       </section>
+
     </main>
+
+    <!-- Toasts -->
+    <div id="toast-container"></div>
+
     <script src="/public/js/game.js"></script>
   </body>
 </html>

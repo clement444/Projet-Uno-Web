@@ -39,6 +39,7 @@ export function createRoom(ownerId, name, maxPlayers = 4) {
   return getRoomById(info.lastInsertRowid);
 }
 
+
 export function getRoomById(id) {
   const stmt = db.prepare(`
     SELECT
@@ -59,6 +60,7 @@ export function getRoomById(id) {
 
   return room;
 }
+
 
 export function getAllRooms() {
   const stmt = db.prepare(`

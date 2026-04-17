@@ -48,8 +48,8 @@ export class Room {
       "DELETE FROM room_players WHERE room_id = ? AND user_id = ?",
     ).run(this.id, player_id);
 
-    const player_count = this.getPlayers();
-    if (player_count == 0) {
+    const players = this.getPlayers();
+    if (players.length === 0) {
       deleteRoom(this.id);
     }
   }

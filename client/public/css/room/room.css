@@ -244,6 +244,13 @@ section {
     gap: 12px;
 }
 
+#host-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
 #start-btn {
     width: 100%;
     padding: 14px;
@@ -265,6 +272,62 @@ section {
 #start-btn:hover {
     opacity: 0.9;
     box-shadow: 0 6px 28px rgba(99, 62, 237, 0.55);
+}
+
+#add-bot-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    font-family: "Inter", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+#add-bot-btn:hover {
+    background: rgba(46, 204, 113, 0.1);
+    color: #86efac;
+    border-color: rgba(46, 204, 113, 0.3);
+}
+
+.bot-avatar {
+    background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+    box-shadow: 0 2px 8px rgba(46, 204, 113, 0.4) !important;
+}
+
+.badge-bot {
+    background: rgba(46, 204, 113, 0.12);
+    border: 1px solid rgba(46, 204, 113, 0.25);
+    color: #2ecc71;
+}
+
+.remove-bot-btn {
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: rgba(239, 68, 68, 0.5);
+    border-radius: 6px;
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.remove-bot-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
 }
 
 #waiting-msg {

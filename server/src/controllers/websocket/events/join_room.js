@@ -1,5 +1,4 @@
 import { broadcast } from "../broadcast.js";
-import db from "../../../utils/db.js";
 import { getRoomById } from "../../api/room.js";
 
 export function onJoinRoom(message, socket, wss) {

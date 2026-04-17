@@ -1,0 +1,283 @@
+/* ─── Layout ───────────────────────────────────────────────────────────────── */
+#game-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  min-height: 100vh;
+}
+
+/* ─── Board ────────────────────────────────────────────────────────────────── */
+#board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#board-center {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+#turn-indicator {
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  background: #f0f0f0;
+}
+
+#turn-indicator.my-turn {
+  background: #2ecc71;
+  color: #fff;
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────────────────── */
+.card {
+  width: 70px;
+  height: 105px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  user-select: none;
+  border: 3px solid rgba(255,255,255,0.4);
+  cursor: default;
+}
+
+.card.interactive {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.card.interactive:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+.card.not-playable {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.card.not-playable:hover {
+  transform: none;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.card-back {
+  background: repeating-linear-gradient(
+    45deg,
+    #c0392b,
+    #c0392b 10px,
+    #e74c3c 10px,
+    #e74c3c 20px
+  );
+  font-size: 0.85rem;
+}
+
+#draw-pile button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+#draw-pile button:disabled .card-back {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Player hand ────────────────────────────────────────────────────────────── */
+#hand {
+  width: 100%;
+  max-width: 900px;
+}
+
+#player-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+/* ─── Color indicator ───────────────────────────────────────────────────────── */
+#color-indicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* ─── Opponents ──────────────────────────────────────────────────────────────── */
+#opponents {
+  width: 100%;
+  max-width: 700px;
+}
+
+#opponent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+#opponent-list li {
+  background: #ecf0f1;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+}
+
+#opponent-list li.active-player {
+  background: #f39c12;
+  color: #fff;
+  font-weight: bold;
+}
+
+.opponent-name { font-size: 0.9rem; }
+.card-count    { font-size: 1.2rem; font-weight: bold; }
+
+/* ─── UNO actions ────────────────────────────────────────────────────────────── */
+#uno-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+#uno-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#uno-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+#counter-uno-btn {
+  background: #8e44ad;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#counter-uno-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Modals ─────────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-overlay.hidden { display: none; }
+
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  min-width: 280px;
+}
+
+.modal-box h2 { margin-bottom: 1.2rem; }
+
+.color-choices {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.color-choice {
+  width: 70px;
+  height: 70px;
+  border: none;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.color-red    { background: #e74c3c; }
+.color-yellow { background: #f1c40f; color: #333; }
+.color-green  { background: #2ecc71; }
+.color-blue   { background: #3498db; }
+
+#color-picker-cancel, #back-lobby-btn {
+  margin-top: 0.5rem;
+  background: #bdc3c7;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+/* ─── Toast notifications ────────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 200;
+}
+
+.toast {
+  background: #2c3e50;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  animation: fadeIn 0.2s ease;
+}
+
+.toast-error { background: #e74c3c; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
