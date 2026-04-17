@@ -13,12 +13,12 @@ export default () => {
   app.get("/api/room", check_auth, function (req, res) {
     logger_http.info("[GET] /api/room");
 
-    const room_id = req.id;
+    const room_id = req.query.id;
 
     if (room_id) {
       const room = getRoomById(room_id);
 
-      if (room.length < 1) {
+      if (!room) {
         res.status(404).json({ message: "No room for this id." });
       } else {
         res.status(200).json(room);
@@ -68,7 +68,7 @@ export default () => {
           case "Already in room":
             return res.status(400).json({ message: e });
           case "Room is full":
-            return res.status(401).json({ message: e });
+            return res.status(400).json({ message: e });
           default:
             return res
               .status(500)

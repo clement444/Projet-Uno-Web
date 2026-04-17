@@ -11,6 +11,8 @@ document.getElementById("current-username").textContent = username;
 document.getElementById("room-name").textContent = roomName || roomId;
 
 const startBtn = document.getElementById("start-btn");
+const addBotBtn = document.getElementById("add-bot-btn");
+const hostActions = document.getElementById("host-actions");
 const waitingMsg = document.getElementById("waiting-msg");
 
 const ws = new WebSocket(`ws://${location.host}`, ["Authorization", token]);
@@ -32,12 +34,14 @@ ws.addEventListener("message", (event) => {
   if (msg.type === "player_joined") addPlayer(msg.name, msg.player_id);
   if (msg.type === "player_left") removePlayer(msg.player_id);
   if (msg.type === "player_disconnected") removePlayer(msg.player_id);
+  if (msg.type === "bot_added") addPlayer(msg.bot_name, msg.bot_id, true);
+  if (msg.type === "bot_removed") removePlayer(msg.bot_id);
   if (msg.type === "game_started") window.location.href = "/game";
 
   checkHost();
 });
 
-function addPlayer(name, id) {
+function addPlayer(name, id, isBotPlayer = false) {
   const list = document.getElementById("players");
   if (document.getElementById(`player-${id}`)) return;
 
@@ -46,18 +50,26 @@ function addPlayer(name, id) {
 
   const isCurrentUser = name === username;
   const isPlayerHost = isCurrentUser && isHost;
-  const initial = name.charAt(0).toUpperCase();
+  const initial = isBotPlayer ? "B" : name.charAt(0).toUpperCase();
 
   li.innerHTML = `
     <div class="player-info">
-      <div class="player-avatar">${initial}</div>
+      <div class="player-avatar${isBotPlayer ? " bot-avatar" : ""}">${initial}</div>
       <span class="player-name">${name}</span>
     </div>
     <div class="player-badges">
+      ${isBotPlayer ? '<span class="badge badge-bot">Bot</span>' : ""}
       ${isCurrentUser ? '<span class="badge badge-you">Vous</span>' : ""}
       ${isPlayerHost ? '<span class="badge badge-host">Hôte</span>' : ""}
+      ${isBotPlayer && isHost ? `<button class="remove-bot-btn" data-bot-id="${id}">✕</button>` : ""}
     </div>
   `;
+
+  if (isBotPlayer && isHost) {
+    li.querySelector(".remove-bot-btn").addEventListener("click", () => {
+      ws.send(JSON.stringify({ type: "remove_bot", room_id: roomId, bot_id: id }));
+    });
+  }
 
   list.appendChild(li);
   updatePlayerCount();
@@ -76,10 +88,10 @@ function updatePlayerCount() {
 
 function checkHost() {
   if (isHost) {
-    startBtn.hidden = false;
+    hostActions.hidden = false;
     waitingMsg.hidden = true;
   } else {
-    startBtn.hidden = true;
+    hostActions.hidden = true;
     waitingMsg.hidden = false;
   }
 }
@@ -112,6 +124,10 @@ startBtn.addEventListener("click", () => {
       player_id: username,
     }),
   );
+});
+
+addBotBtn.addEventListener("click", () => {
+  ws.send(JSON.stringify({ type: "add_bot", room_id: roomId }));
 });
 
 const standardColors = ["#F63A3A", "#565EF5", "#F5D55D", "#5DF55D"];

@@ -64,5 +64,3 @@ export async function loginUser(req, res) {
   const token = generate_token(user.id);
   res.json({ token });
 }
-
-export function removeUser() {}

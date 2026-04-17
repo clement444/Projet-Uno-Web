@@ -87,7 +87,7 @@ registerForm.addEventListener("submit", async (e) => {
   });
 
   const data = await res.json();
-  if (!res.ok) return showMsg("register-msg", data.error, true);
+  if (!res.ok) return showMsg("register-msg", data.message || data.error, true);
 
   showMsg("register-msg", "Compte créé avec succès !", false);
 

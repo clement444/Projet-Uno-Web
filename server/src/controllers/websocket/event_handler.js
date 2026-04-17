@@ -5,6 +5,8 @@ import { onPlayCard }    from "./events/play_card.js";
 import { onDrawCard }    from "./events/draw_card.js";
 import { onUno }         from "./events/uno.js";
 import { onCounterUno }  from "./events/counter_uno.js";
+import { onAddBot }      from "./events/add_bot.js";
+import { onRemoveBot }   from "./events/remove_bot.js";
 
 export function handleEvent(message, socket, wss) {
   switch (message.type) {
@@ -15,6 +17,8 @@ export function handleEvent(message, socket, wss) {
     case "draw_card":    onDrawCard(message, socket, wss);   break;
     case "uno":          onUno(message, socket, wss);        break;
     case "counter_uno":  onCounterUno(message, socket, wss); break;
+    case "add_bot":      onAddBot(message, socket, wss);     break;
+    case "remove_bot":   onRemoveBot(message, socket, wss);  break;
     default:
       socket.send(JSON.stringify({ error: `Unknown event type: ${message.type}` }));
   }

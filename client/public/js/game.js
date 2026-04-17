@@ -174,12 +174,22 @@ function renderColorIndicator() {
 function renderTurnBadge() {
   const el      = document.getElementById("turn-badge");
   const isMyTurn = String(currentPlayerId) === String(username);
-  el.textContent = isMyTurn ? "C'est votre tour !" : `Tour de ${currentPlayerId ?? "…"}`;
+  const displayName = isBot(currentPlayerId) ? formatBotName(currentPlayerId) : currentPlayerId;
+  el.textContent = isMyTurn ? "C'est votre tour !" : `Tour de ${displayName ?? "…"}`;
   el.classList.toggle("my-turn", isMyTurn);
   document.getElementById("draw-btn").disabled = !isMyTurn;
 }
 
 // ─── Adversaires ──────────────────────────────────────────────────────────────
+
+function isBot(pid) {
+  return String(pid).startsWith("bot_");
+}
+
+function formatBotName(pid) {
+  // "bot_3" → "Bot 3"
+  return "Bot " + String(pid).replace("bot_", "");
+}
 
 function renderOpponents(counts) {
   const list = document.getElementById("opponent-list");
@@ -188,11 +198,13 @@ function renderOpponents(counts) {
     if (String(pid) === String(username)) return;
     const li    = document.createElement("li");
     const isActive = String(pid) === String(currentPlayerId);
+    const bot   = isBot(pid);
     li.className = `opponent-card${isActive ? " active" : ""}`;
-    const initial = String(pid).charAt(0).toUpperCase();
+    const displayName = bot ? formatBotName(pid) : String(pid);
+    const initial = bot ? "B" : displayName.charAt(0).toUpperCase();
     li.innerHTML = `
-      <div class="opponent-avatar">${initial}</div>
-      <span class="opponent-name">${pid}</span>
+      <div class="opponent-avatar${bot ? " bot-avatar" : ""}">${initial}</div>
+      <span class="opponent-name">${displayName}</span>
       <span class="opponent-count">${count} carte${count > 1 ? "s" : ""}</span>
     `;
     list.appendChild(li);
@@ -311,7 +323,8 @@ counterBtn.addEventListener("click", () => {
 
 function showGameOver(winner_id) {
   const isWinner = String(winner_id) === String(username);
-  document.getElementById("gameover-title").textContent = isWinner ? "🎉 Vous avez gagné !" : `${winner_id} a gagné !`;
+  const winnerName = isBot(winner_id) ? formatBotName(winner_id) : winner_id;
+  document.getElementById("gameover-title").textContent = isWinner ? "🎉 Vous avez gagné !" : `${winnerName} a gagné !`;
   document.getElementById("gameover-sub").textContent   = isWinner ? "Félicitations !" : "Meilleure chance la prochaine fois.";
   document.getElementById("gameover-modal").classList.remove("hidden");
 }

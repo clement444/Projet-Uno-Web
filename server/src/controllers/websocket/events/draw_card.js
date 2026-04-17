@@ -1,5 +1,6 @@
 import { broadcast } from "../broadcast.js";
 import { getGame } from "../../../structures/game/game_state.js";
+import { scheduleBotTurn } from "../../../structures/game/bot.js";
 
 export function onDrawCard(message, socket, wss) {
   const { room_id } = message;
@@ -22,4 +23,7 @@ export function onDrawCard(message, socket, wss) {
     count: result.drawn.length,
     ...game.publicState(),
   });
+
+  // Si le prochain joueur est un bot, le faire jouer
+  scheduleBotTurn(game, wss);
 }

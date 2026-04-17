@@ -1,5 +1,6 @@
 import { broadcast } from "../broadcast.js";
 import { getGame } from "../../../structures/game/game_state.js";
+import { scheduleBotTurn } from "../../../structures/game/bot.js";
 
 export function onPlayCard(message, socket, wss) {
   const { room_id, card_index, chosen_color } = message;
@@ -25,5 +26,9 @@ export function onPlayCard(message, socket, wss) {
 
   if (result.winner) {
     broadcast(wss, room_id, { type: "game_over", winner_id: result.winner });
+    return;
   }
+
+  // Si le prochain joueur est un bot, le faire jouer
+  scheduleBotTurn(game, wss);
 }

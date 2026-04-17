@@ -151,6 +151,10 @@ section {
     flex-shrink: 0;
 }
 
+.opponent-avatar.bot-avatar {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
 .opponent-name {
     font-size: 0.875rem;
     font-weight: 500;
