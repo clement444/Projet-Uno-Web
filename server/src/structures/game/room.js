@@ -66,7 +66,7 @@ export class Room {
 
     const players = this.getPlayers();
     if (players.length === 0) {
-      deleteRoom(this.id);
+      this.cleanupBots();
     }
   }
 
@@ -82,19 +82,49 @@ export class Room {
 
     this._checkCapacity();
 
-    const botNames = [
-      "RoboMax",
-      "ByteCrusher",
-      "NeonPulse",
-      "CircuitGhost",
-      "AlphaBot",
-      "OmegaUnit",
-      "SteelMind",
-      "QuantumSpark",
-      "NovaCore",
-      "PixelPhantom",
+    const bot_names = [
+      "BotBaguette",
+      "Jean-Michel_Robot",
+      "LaBeuhMachine",
+      "RoboChibre",
+      "GigaChadou",
+      "BotDeLaStreet",
+      "RoiDesBots",
+      "Botinator3000",
+      "LeMecDu84",
+      "BotMarrant",
+      "RoboTocard",
+      "BotLeRigolo",
+      "GrosMinetDuTurfu",
+      "BotDeCompét",
+      "LeBotQuiPue",
+      "BotDeLaHess",
+      "RoboRaclette",
+      "BotSansCerveau",
+      "BotDeLaBagarre",
+      "JeanBot",
+      "BotDeLaDaronne",
+      "RoboSauceSamouraï",
+      "BotDeSecours",
+      "BotLeSang",
+      "BotDeLaMoula",
+      "BotFDP (Friendly Digital Player)",
+      "BotTémaLaTaille",
+      "BotPasFou",
+      "BotQuiFaitLeTaf",
+      "BotDeLaZer",
+      "BotTocard",
+      "BotPasNet",
+      "BotDuTurfu",
+      "BotDeLaFlemme",
+      "BotQuiTryhard",
+      "BotMemeLord",
+      "BotChibreur",
+      "BotDeLaNight",
+      "BotPasContent",
     ];
-    const bot_name = botNames[Math.floor(Math.random() * botNames.length)];
+
+    const bot_name = bot_names[Math.floor(Math.random() * bot_names.length)];
 
     db.prepare(
       "INSERT INTO room_players (room_id, user_id, bot_name, is_bot) VALUES (?, ?, ?, 1)",
@@ -112,10 +142,8 @@ export class Room {
     ).run(this.id, bot_id);
 
     const players = this.getPlayers();
-    const bots = this.getBots();
-
-    if (players.length === 0 && bots.length === 0) {
-      deleteRoom(this.id);
+    if (players.length === 0) {
+      this.cleanupBots();
     }
   }
 
@@ -189,6 +217,19 @@ export class Room {
     return [...normalizedPlayers, ...normalizedBots].sort(
       (a, b) => new Date(a.joined_at) - new Date(b.joined_at),
     );
+  }
+
+  cleanupBots() {
+    db.prepare("DELETE FROM room_players WHERE room_id = ? AND is_bot = 1").run(
+      this.id,
+    );
+
+    const players = this.getPlayers();
+    const bots = this.getBots();
+
+    if (players.length === 0 && bots.length === 0) {
+      deleteRoom(this.id);
+    }
   }
 
   _checkCapacity() {
