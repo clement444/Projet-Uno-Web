@@ -65,6 +65,11 @@ export class Room {
     ).run(this.id, player_id);
 
     const players = this.getPlayers();
+
+    if (players.length === 1 && players[0].id != this.owner_id) {
+      this.changeOwnership(players[0].id);
+    }
+
     if (players.length === 0) {
       this.cleanupBots();
     }

@@ -46,7 +46,7 @@ ws.addEventListener("message", (event) => {
 
   switch (msg.type) {
     case "error":
-      console.log(msg.error);
+      handleErrors(msg.code);
       break;
 
     case "room_data":
@@ -66,6 +66,10 @@ ws.addEventListener("message", (event) => {
     case "player_left":
     case "player_disconnected":
       removePlayer(msg.player_id);
+      if (msg.new_owner_id) {
+        room_host_id = msg.new_owner_id;
+        checkHost();
+      }
       break;
 
     case "bot_added":
@@ -326,3 +330,10 @@ async function generateBackground() {
 }
 
 generateBackground();
+
+function handleErrors(code) {
+  switch (code) {
+    case "room_not_found":
+      return (window.location.href = "/lobby");
+  }
+}
