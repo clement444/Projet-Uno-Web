@@ -3,13 +3,23 @@ import { Room } from "../../structures/game/room";
 import db from "../../utils/db";
 
 export function createRoom(ownerId, name, maxPlayers = 4) {
-  if (name.trim() == "")
+  if (name.trim() == "" || !name)
     throw new Error(
       JSON.stringify({
         status_code: 400,
         message: "No name provided.",
       }),
     );
+  name = name.trim();
+
+  if (name.length > 20) {
+    throw new Error(
+      JSON.stringify({
+        status_code: 400,
+        message: "Ce nom est trop long.",
+      }),
+    );
+  }
 
   const existing = db
     .prepare("SELECT id FROM rooms WHERE name = ? LIMIT 1")
