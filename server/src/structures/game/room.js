@@ -26,6 +26,8 @@ export class Room {
     const stmt = db.prepare("UPDATE rooms SET owner_id = ? WHERE id = ?");
     stmt.run(player_id, this.id);
 
+    this.owner_id = player_id;
+
     return getRoomById(this.id);
   }
 
@@ -64,12 +66,15 @@ export class Room {
       "DELETE FROM room_players WHERE room_id = ? AND user_id = ?",
     ).run(this.id, player_id);
 
-    const players = this.getPlayers();
+    if (this.owner_id === player_id) {
+      const players = this.getPlayers();
+      const selectedPlayer =
+        players[Math.floor(Math.random() * players.length)];
 
-    if (players.length === 1 && players[0].id != this.owner_id) {
-      this.changeOwnership(players[0].id);
+      this.changeOwnership(selectedPlayer.id);
     }
 
+    const players = this.getPlayers();
     if (players.length === 0) {
       this.cleanupBots();
     }

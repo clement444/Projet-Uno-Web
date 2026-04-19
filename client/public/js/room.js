@@ -183,13 +183,6 @@ function checkHost() {
 }
 
 document.getElementById("leave-btn").addEventListener("click", async () => {
-  await fetch(`/api/room?leave=${roomId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
   ws.send(
     JSON.stringify({
       type: "leave_room",
