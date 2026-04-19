@@ -127,16 +127,18 @@ document.querySelectorAll(".filter-btn").forEach((btn) => {
 });
 
 async function joinRoom(roomId, roomName) {
-  const room = await fetch(`/api/room?join=${roomId}`, {
+  const response = await fetch(`/api/room?join=${roomId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   }).then((res) => res.json());
-  localStorage.setItem("uno_room_id", room.id);
-  localStorage.setItem("uno_room_name", room.name);
-  localStorage.setItem("uno_is_host", `${room.isPlayerHost}`);
+  if (response.status != 200) return showError(response.message);
+
+  localStorage.setItem("uno_room_id", response.id);
+  localStorage.setItem("uno_room_name", response.name);
+  localStorage.setItem("uno_is_host", `${response.isPlayerHost}`);
   window.location.href = "/room";
 }
 
@@ -320,3 +322,48 @@ async function generateBackground() {
 }
 
 generateBackground();
+
+const MAX_VISIBLE = 3;
+const OFFSET = 12; // vertical shift per error
+
+function showError(message) {
+  const stack = document.getElementById("error-stack");
+
+  // Create popup
+  const popup = document.createElement("div");
+  popup.className = "error-popup";
+  popup.innerHTML = message;
+
+  // Insert newest at the top
+  stack.prepend(popup);
+
+  // Get all popups (newest first)
+  const popups = [...stack.children];
+
+  // If too many → remove the oldest (bottom)
+  if (popups.length > MAX_VISIBLE) {
+    const oldest = popups[popups.length - 1];
+    oldest.style.animation = "fadeOutErr 0.35s ease-in forwards";
+    setTimeout(() => oldest.remove(), 350);
+  }
+
+  // Recalculate positions + z-index
+  [...stack.children].forEach((el, i) => {
+    el.style.top = i * OFFSET + "px"; // push older ones down
+    el.style.zIndex = (999 - i).toString(); // newest always on top
+  });
+
+  // Auto-remove after 3s
+  setTimeout(() => {
+    popup.style.animation = "fadeOutErr 0.35s ease-in forwards";
+    setTimeout(() => {
+      popup.remove();
+
+      // Reposition remaining popups
+      [...stack.children].forEach((el, i) => {
+        el.style.top = i * OFFSET + "px";
+        el.style.zIndex = (999 - i).toString();
+      });
+    }, 350);
+  }, 3000);
+}

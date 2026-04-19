@@ -26,7 +26,26 @@ export async function onJoinRoom(message, socket, wss) {
       }),
     );
 
-  room.addPlayer(socket.user_id);
+  try {
+    room.addPlayer(socket.user_id);
+  } catch (e) {
+    switch (e.message) {
+      case "Room player limit exceeded":
+        return socket.send(
+          JSON.stringify({
+            type: "error",
+            code: "room_full",
+          }),
+        );
+      default:
+        return socket.send(
+          JSON.stringify({
+            type: "error",
+            code: "internal_error",
+          }),
+        );
+    }
+  }
 
   socket.send(
     JSON.stringify({

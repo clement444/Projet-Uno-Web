@@ -245,7 +245,12 @@ export class Room {
   _checkCapacity() {
     const count = this.getParticipants().length;
     if (count >= this.max_players) {
-      throw new Error("Room player limit exceeded");
+      throw new Error(
+        JSON.stringify({
+          status_code: 401,
+          message: "Salon plein.",
+        }),
+      );
     }
   }
 }
