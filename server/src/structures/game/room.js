@@ -66,17 +66,17 @@ export class Room {
       "DELETE FROM room_players WHERE room_id = ? AND user_id = ?",
     ).run(this.id, player_id);
 
+    const players = this.getPlayers();
+    if (players.length === 0) {
+      return this.cleanupBots();
+    }
+
     if (this.owner_id === player_id) {
       const players = this.getPlayers();
       const selectedPlayer =
         players[Math.floor(Math.random() * players.length)];
 
       this.changeOwnership(selectedPlayer.id);
-    }
-
-    const players = this.getPlayers();
-    if (players.length === 0) {
-      this.cleanupBots();
     }
   }
 
