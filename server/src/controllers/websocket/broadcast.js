@@ -1,16 +1,20 @@
-export function broadcast(wss, room_id, data, exclude_socket = null) {
+export function broadcast(wss, room_id, data) {
   const payload = JSON.stringify(data);
   wss.clients.forEach((client) => {
-    if (client.readyState === 1 && client.room_id === room_id && client !== exclude_socket) {
+    if (client.readyState === 1 && String(client.room_id) === String(room_id)) {
       client.send(payload);
     }
   });
 }
 
-export function sendToPlayer(wss, user_id, data) {
+export function broadcast_except_sender(wss, room_id, sender_id, data) {
   const payload = JSON.stringify(data);
   wss.clients.forEach((client) => {
-    if (client.readyState === 1 && client.user?.id === user_id) {
+    if (
+      client.readyState === 1 &&
+      String(client.room_id) === String(room_id) &&
+      sender_id != client.user_id
+    ) {
       client.send(payload);
     }
   });

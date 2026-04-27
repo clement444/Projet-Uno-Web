@@ -5,436 +5,383 @@ const roomId = localStorage.getItem("uno_room_id");
 if (!token || !roomId) window.location.href = "/";
 
 document.getElementById("current-player-name").textContent = username;
-document.getElementById("room-name").textContent = localStorage.getItem("uno_room_name") ?? "";
 
-const CARD_ASSETS = [
-  "0","1","2","3","4","5","6","7","8","9",
-  "+2","+4","colors","block","change_direction",
-  "fire","eye","shuffle","deck"
-];
-const COLOR_BG = { 0: "#333", 1: "#F63A3A", 2: "#565EF5", 3: "#5DF55D", 4: "#F5D55D" };
+// ─── Constantes ───────────────────────────────────────────────────────────────
 
-const ws = new WebSocket(`ws://${location.host}`);
-let myId = null;
-let isMyTurn = false;
+const COLOR_HEX = { 1: "#F63A3A", 2: "#F6E747", 3: "#5DF55D", 4: "#565EF5" };
+
+const CARD_SVG = {
+  0: "/public/assets/cards/0.svg",
+  1: "/public/assets/cards/1.svg",
+  2: "/public/assets/cards/2.svg",
+  3: "/public/assets/cards/3.svg",
+  4: "/public/assets/cards/4.svg",
+  5: "/public/assets/cards/5.svg",
+  6: "/public/assets/cards/6.svg",
+  7: "/public/assets/cards/7.svg",
+  8: "/public/assets/cards/8.svg",
+  9: "/public/assets/cards/9.svg",
+  10: "/public/assets/cards/+2.svg",
+  11: "/public/assets/cards/+4.svg",
+  12: "/public/assets/cards/colors.svg",
+  13: "/public/assets/cards/block.svg",
+  14: "/public/assets/cards/change_direction.svg",
+};
+
+// Cache SVG texte
+const svgCache = {};
+async function loadSVG(url) {
+  if (!svgCache[url]) {
+    const r = await fetch(url);
+    svgCache[url] = await r.text();
+  }
+  return svgCache[url];
+}
+
+// Précharge toutes les SVG
+Object.values(CARD_SVG).forEach(loadSVG);
+
+// Crée un élément SVG coloré
+function makeSVGEl(svgText, color) {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = svgText.trim();
+  const svg = wrap.firstChild;
+  // Les SVG de nombres ont le rect de fond en premier
+  const rect = svg.querySelector("rect");
+  if (rect && color) rect.setAttribute("fill", color);
+  svg.style.width = "100%";
+  svg.style.height = "100%";
+  svg.style.borderRadius = "10px";
+  return svg;
+}
+
+// ─── État ─────────────────────────────────────────────────────────────────────
+
+let myHand = []; // [{ card_id, color }]
 let currentPlayerId = null;
-let topCard = null;
-const pendingUno = {};
-const playerNames = {};
+let currentColor = null;
+let lastCard = null;
+let pendingUno = {};
+let pendingWildIndex = null;
 
-const unoBtn = document.getElementById("uno-btn");
-const counterUnoBtn = document.getElementById("counter-uno-btn");
+// ─── WebSocket ────────────────────────────────────────────────────────────────
+
+const ws = new WebSocket(`ws://${location.host}`, ["Authorization", token]);
 
 ws.addEventListener("open", () => {
-  ws.send(JSON.stringify({ type: "join_room", room_id: parseInt(roomId), token }));
+  ws.send(
+    JSON.stringify({
+      type: "join_room",
+      room_id: roomId,
+      token: "JHJAIJIDAJIDJAID",
+    }),
+  );
 });
 
 ws.addEventListener("message", (event) => {
   const msg = JSON.parse(event.data);
 
-  if (msg.type === "game_started") {
-    topCard = msg.top_card;
-    renderTopCard(msg.top_card);
-    currentPlayerId = msg.current_player_id;
-    if (myId !== null) updateTurnIndicator(currentPlayerId);
-  }
-  if (msg.type === "hand_update") {
-    if (msg.your_id) {
-      myId = msg.your_id;
-      playerNames[myId] = username;
-      if (currentPlayerId !== null) updateTurnIndicator(currentPlayerId);
-    }
-    msg.opponents.forEach((p) => { playerNames[p.id] = p.username; });
-    renderHand(msg.hand);
-    renderOpponents(msg.opponents);
-  }
-  if (msg.type === "card_played") {
-    topCard = { id: msg.card_id, color: msg.color };
-    renderTopCard(topCard);
-    if (msg.player_id !== myId) updateOpponentCount(msg.player_id, -1);
-  }
-  if (msg.type === "turn") {
-    updateTurnIndicator(msg.player_id);
-  }
-  if (msg.type === "uno_declared") {
-    pendingUno[msg.player_id] = true;
-    updateCounterUnoBtn();
-  }
-  if (msg.type === "draw_forced") {
-    const name = playerNames[msg.player_id] ?? `Joueur ${msg.player_id}`;
-    showNotification(`${name} pioche ${msg.count} carte(s) !`);
-    updateOpponentCount(msg.player_id, msg.count);
-  }
-  if (msg.type === "player_skipped") {
-    const name = playerNames[msg.player_id] ?? `Joueur ${msg.player_id}`;
-    showNotification(`${name} est passé !`);
-  }
-  if (msg.type === "direction_changed") {
-    updateDirectionIndicator(msg.direction);
-  }
-  if (msg.type === "card_drawn") {
-    if (msg.player_id !== myId) updateOpponentCount(msg.player_id, 1);
-  }
-  if (msg.type === "counter_uno") {
-    delete pendingUno[msg.target_id];
-    updateCounterUnoBtn();
-    if (msg.target_id !== myId) updateOpponentCount(msg.target_id, 2);
-  }
-  if (msg.type === "player_disconnected") {
-    const name = playerNames[msg.player_id] ?? `Joueur ${msg.player_id}`;
-    showNotification(`${name} s'est déconnecté.`);
-    const el = document.getElementById(`opponent-${msg.player_id}`);
-    if (el) el.remove();
-  }
-  if (msg.type === "game_over") {
-    const won = msg.winner_id === myId;
-    const name = playerNames[msg.winner_id] ?? `Joueur ${msg.winner_id}`;
-    showGameResult(won, name);
+  switch (msg.type) {
+    case "game_started":
+    case "card_played":
+    case "player_drew":
+    case "uno_claimed":
+      applyPublicState(msg);
+      break;
+
+    case "hand_update":
+      myHand = msg.cards;
+      renderHand();
+      updateUnoBtn();
+      break;
+
+    case "uno_pending":
+      pendingUno[msg.player_id] = true;
+      toast(`${msg.player_id} dit UNO !`, "good");
+      updateCounterBtn();
+      break;
+
+    case "game_over":
+      showGameOver(msg.winner_id);
+      break;
+
+    case "play_error":
+      toast(friendlyError(msg.error), "bad");
+      break;
+
+    case "draw_error":
+      toast(friendlyError(msg.error), "bad");
+      break;
+
+    case "error":
+      toast(msg.error, "bad");
+      break;
   }
 });
 
-function renderTopCard(card) {
+function friendlyError(e) {
+  const map = {
+    not_your_turn: "Ce n'est pas votre tour.",
+    cannot_play: "Vous ne pouvez pas jouer cette carte.",
+    color_required: "Choisissez une couleur.",
+    invalid_card: "Carte invalide.",
+    not_uno: "Vous n'avez pas 1 seule carte.",
+    no_pending: "Personne n'a dit UNO.",
+  };
+  return map[e] ?? e;
+}
+
+// ─── Appliquer l'état public ──────────────────────────────────────────────────
+
+function applyPublicState(msg) {
+  if (msg.current_player_id !== undefined)
+    currentPlayerId = msg.current_player_id;
+  if (msg.color !== undefined) currentColor = msg.color;
+  if (msg.last_card !== undefined) lastCard = msg.last_card;
+
+  // Nettoyer UNO pending si uno_claimed
+  if (msg.type === "uno_claimed") {
+    delete pendingUno[msg.target_id];
+    if (msg.caller_id !== username)
+      toast(`${msg.caller_id} a contré UNO de ${msg.target_id} !`, "good");
+    updateCounterBtn();
+  }
+
+  renderTopCard();
+  renderColorIndicator();
+  renderOpponents(msg.card_counts ?? {});
+  renderTurnBadge();
+  renderHand(); // re-render pour mettre à jour les jouables
+}
+
+// ─── Carte du dessus (défausse) ───────────────────────────────────────────────
+
+async function renderTopCard() {
   const el = document.getElementById("current-card");
   el.innerHTML = "";
-  const wrapper = document.createElement("div");
-  wrapper.className = "card-face-pile";
-  wrapper.style.background = COLOR_BG[card.color] || "#333";
-  const img = document.createElement("img");
-  img.src = `/public/assets/cards/${CARD_ASSETS[card.id]}.svg`;
-  img.alt = CARD_ASSETS[card.id];
-  wrapper.appendChild(img);
-  el.appendChild(wrapper);
+  if (!lastCard) {
+    el.innerHTML = `<span class="slot-label">Défausse</span>`;
+    return;
+  }
+
+  const url = CARD_SVG[lastCard.card_id];
+  if (!url) return;
+  const svgText = await loadSVG(url);
+  const color = lastCard.color ? COLOR_HEX[lastCard.color] : null;
+  el.appendChild(makeSVGEl(svgText, color));
 }
 
-function updateTurnIndicator(player_id) {
-  isMyTurn = player_id === myId;
+// ─── Indicateur de couleur ────────────────────────────────────────────────────
+
+function renderColorIndicator() {
+  const el = document.getElementById("color-indicator");
+  el.style.background = currentColor ? COLOR_HEX[currentColor] : "#333";
+  el.classList.toggle("lit", !!currentColor);
+  el.style.color = currentColor ? COLOR_HEX[currentColor] : "transparent";
+}
+
+// ─── Badge de tour ────────────────────────────────────────────────────────────
+
+function renderTurnBadge() {
+  const el = document.getElementById("turn-badge");
+  const isMyTurn = String(currentPlayerId) === String(username);
+  const displayName = isBot(currentPlayerId)
+    ? formatBotName(currentPlayerId)
+    : currentPlayerId;
+  el.textContent = isMyTurn
+    ? "C'est votre tour !"
+    : `Tour de ${displayName ?? "…"}`;
+  el.classList.toggle("my-turn", isMyTurn);
   document.getElementById("draw-btn").disabled = !isMyTurn;
-  document.getElementById("turn-indicator").textContent = isMyTurn
-    ? "C'est ton tour !"
-    : `Tour de ${playerNames[player_id] ?? `joueur ${player_id}`}`;
-  document.querySelectorAll("#player-cards button").forEach((btn) => {
-    if (!isMyTurn) {
-      btn.disabled = true;
-      btn.classList.remove("card-playable");
-    } else {
-      const card = { card_id: parseInt(btn.dataset.cardId), color: parseInt(btn.dataset.color) };
-      const playable = isCardPlayable(card);
-      btn.disabled = !playable;
-      btn.classList.toggle("card-playable", playable);
-    }
+}
+
+// ─── Adversaires ──────────────────────────────────────────────────────────────
+
+function isBot(pid) {
+  return String(pid).startsWith("bot_");
+}
+
+function formatBotName(pid) {
+  // "bot_3" → "Bot 3"
+  return "Bot " + String(pid).replace("bot_", "");
+}
+
+function renderOpponents(counts) {
+  const list = document.getElementById("opponent-list");
+  list.innerHTML = "";
+  Object.entries(counts).forEach(([pid, count]) => {
+    if (String(pid) === String(username)) return;
+    const li = document.createElement("li");
+    const isActive = String(pid) === String(currentPlayerId);
+    const bot = isBot(pid);
+    li.className = `opponent-card${isActive ? " active" : ""}`;
+    const displayName = bot ? formatBotName(pid) : String(pid);
+    const initial = bot ? "B" : displayName.charAt(0).toUpperCase();
+    li.innerHTML = `
+      <div class="opponent-avatar${bot ? " bot-avatar" : ""}">${initial}</div>
+      <span class="opponent-name">${displayName}</span>
+      <span class="opponent-count">${count} carte${count > 1 ? "s" : ""}</span>
+    `;
+    list.appendChild(li);
   });
-  refreshDrawHighlight();
 }
 
-function isCardPlayable(card) {
-  if (!topCard) return false;
-  if ([11, 12].includes(card.card_id)) return true;
-  return card.color === topCard.color || card.card_id === topCard.id;
-}
+// ─── Main du joueur ───────────────────────────────────────────────────────────
 
-function renderHand(hand) {
+async function renderHand() {
   const list = document.getElementById("player-cards");
   list.innerHTML = "";
-  hand.forEach((card) => {
+  const isMyTurn = String(currentPlayerId) === String(username);
+
+  for (let i = 0; i < myHand.length; i++) {
+    const card = myHand[i];
+    const playable = isMyTurn && canPlay(card);
+
     const li = document.createElement("li");
-    li.className = "hand-slot";
-    const btn = document.createElement("button");
-    btn.className = "card-face";
-    btn.style.background = COLOR_BG[card.color] || "#333";
-    const playable = isMyTurn && isCardPlayable(card);
-    btn.disabled = !isMyTurn || !playable;
-    btn.dataset.cardId = card.card_id;
-    btn.dataset.color = card.color;
-    btn.dataset.rowId = card.id;
-    btn.classList.toggle("card-playable", playable);
-    const img = document.createElement("img");
-    img.src = `/public/assets/cards/${CARD_ASSETS[card.card_id]}.svg`;
-    img.alt = CARD_ASSETS[card.card_id];
-    btn.appendChild(img);
-    btn.addEventListener("click", async () => {
-      const payload = { type: "play_card", card_id: card.card_id, row_id: card.id };
-      if ([11, 12].includes(card.card_id)) {
-        const color = await askColor();
-        if (!color) return;
-        payload.color = color;
-      }
-      ws.send(JSON.stringify(payload));
-    });
-    li.appendChild(btn);
-    list.appendChild(li);
-  });
-  updateUnoBtn(hand.length);
-  refreshDrawHighlight();
-}
+    const div = document.createElement("div");
+    div.className = `hand-card noselect ${playable ? "playable" : "not-playable"}`;
+    div.title = playable ? "Jouer cette carte" : "";
 
+    // SVG coloré
+    const url = CARD_SVG[card.card_id];
+    if (url) {
+      const svgText = await loadSVG(url);
+      const color = card.color ? COLOR_HEX[card.color] : null;
+      div.appendChild(makeSVGEl(svgText, color));
+    }
 
-const opponentData = new Map();
+    if (playable) {
+      div.addEventListener("click", () => handlePlay(i, card));
+    }
 
-function renderOpponents(opponents) {
-  document.getElementById("opponent-list").innerHTML = "";
-  opponentData.clear();
-  opponents.forEach((p) => {
-    opponentData.set(p.id, { username: p.username, card_count: p.card_count });
-    renderOpponent(p.id);
-  });
-}
-
-function renderOpponent(id) {
-  const data = opponentData.get(id);
-  if (!data) return;
-  const list = document.getElementById("opponent-list");
-  let li = document.getElementById(`opponent-${id}`);
-  if (!li) {
-    li = document.createElement("li");
-    li.id = `opponent-${id}`;
-    li.className = "opponent";
+    li.appendChild(div);
     list.appendChild(li);
   }
-  li.innerHTML = "";
+}
 
-  const nameEl = document.createElement("span");
-  nameEl.className = "opponent-name";
-  nameEl.textContent = data.username;
+// ─── Peut-on jouer cette carte ? ─────────────────────────────────────────────
 
-  const stack = document.createElement("div");
-  stack.className = "opponent-card-stack";
-  const show = Math.min(data.card_count, 8);
-  stack.style.width = `${Math.max(42, 42 + (show - 1) * 16)}px`;
-  for (let i = 0; i < show; i++) {
-    const card = document.createElement("div");
-    card.className = "card-back-mini";
-    card.style.left = `${i * 16}px`;
-    const img = document.createElement("img");
-    img.src = "/public/assets/cards/uno_recto.svg";
-    card.appendChild(img);
-    stack.appendChild(card);
+function canPlay(card) {
+  if (lastCard === null) return true;
+  const isWild = card.card_id === 11 || card.card_id === 12;
+  if (isWild) return true;
+  return card.color === currentColor || card.card_id === lastCard.card_id;
+}
+
+// ─── Jouer ────────────────────────────────────────────────────────────────────
+
+function handlePlay(index, card) {
+  const isWild = card.card_id === 11 || card.card_id === 12;
+  if (isWild) {
+    pendingWildIndex = index;
+    showColorModal();
+  } else {
+    sendPlay(index, null);
   }
-
-  const badge = document.createElement("span");
-  badge.className = "card-count-badge";
-  badge.textContent = data.card_count;
-
-  li.appendChild(nameEl);
-  li.appendChild(stack);
-  li.appendChild(badge);
 }
 
-function updateUnoBtn(count) {
-  const show = count === 1;
-  unoBtn.hidden = !show;
-  unoBtn.disabled = !show;
+function sendPlay(index, chosenColor) {
+  ws.send(
+    JSON.stringify({
+      type: "play_card",
+      room_id: roomId,
+      player_id: username,
+      card_index: index,
+      chosen_color: chosenColor,
+    }),
+  );
 }
 
-function updateCounterUnoBtn() {
-  const hasPending = Object.keys(pendingUno).some((id) => parseInt(id) !== myId);
-  counterUnoBtn.hidden = !hasPending;
-  counterUnoBtn.disabled = !hasPending;
+// ─── Modal couleur ────────────────────────────────────────────────────────────
+
+function showColorModal() {
+  document.getElementById("color-modal").classList.remove("hidden");
+}
+
+document.querySelectorAll(".color-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.getElementById("color-modal").classList.add("hidden");
+    if (pendingWildIndex !== null) {
+      sendPlay(pendingWildIndex, Number(btn.dataset.color));
+      pendingWildIndex = null;
+    }
+  });
+});
+
+// ─── Piocher ──────────────────────────────────────────────────────────────────
+
+document.getElementById("draw-btn").addEventListener("click", () => {
+  ws.send(
+    JSON.stringify({ type: "draw_card", room_id: roomId, player_id: username }),
+  );
+});
+
+// ─── UNO ──────────────────────────────────────────────────────────────────────
+
+const unoBtn = document.getElementById("uno-btn");
+const counterBtn = document.getElementById("counter-uno-btn");
+
+function updateUnoBtn() {
+  unoBtn.disabled = myHand.length !== 1;
+}
+function updateCounterBtn() {
+  const has = Object.keys(pendingUno).some(
+    (id) => String(id) !== String(username),
+  );
+  counterBtn.disabled = !has;
 }
 
 unoBtn.addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "uno" }));
-  unoBtn.hidden = true;
+  ws.send(
+    JSON.stringify({ type: "uno", room_id: roomId, player_id: username }),
+  );
   unoBtn.disabled = true;
 });
 
-counterUnoBtn.addEventListener("click", () => {
-  const target = Object.keys(pendingUno).map(Number).find((id) => id !== myId);
+counterBtn.addEventListener("click", () => {
+  const target = Object.keys(pendingUno).find(
+    (id) => String(id) !== String(username),
+  );
   if (!target) return;
-  ws.send(JSON.stringify({ type: "counter_uno", target_id: target }));
-  counterUnoBtn.hidden = true;
-  counterUnoBtn.disabled = true;
+  ws.send(
+    JSON.stringify({
+      type: "counter_uno",
+      room_id: roomId,
+      player_id: username,
+      target_id: target,
+    }),
+  );
 });
 
-document.getElementById("draw-btn").addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "draw_card" }));
+// ─── Game over ────────────────────────────────────────────────────────────────
+
+function showGameOver(winner_id) {
+  const isWinner = String(winner_id) === String(username);
+  const winnerName = isBot(winner_id) ? formatBotName(winner_id) : winner_id;
+  document.getElementById("gameover-title").textContent = isWinner
+    ? "🎉 Vous avez gagné !"
+    : `${winnerName} a gagné !`;
+  document.getElementById("gameover-sub").textContent = isWinner
+    ? "Félicitations !"
+    : "Meilleure chance la prochaine fois.";
+  document.getElementById("gameover-modal").classList.remove("hidden");
+}
+
+document.getElementById("back-lobby-btn").addEventListener("click", () => {
+  window.location.href = "/lobby";
 });
 
-document.getElementById("leave-btn").addEventListener("click", () => {
-  ws.send(JSON.stringify({ type: "leave_room" }));
-  window.location.href = "/";
-});
+// ─── Toasts ───────────────────────────────────────────────────────────────────
 
-function askColor() {
-  return new Promise((resolve) => {
-    const picker = document.getElementById("color-picker");
-    picker.hidden = false;
-    function onPick(e) {
-      const btn = e.target.closest("button[data-color]");
-      if (!btn) return;
-      picker.hidden = true;
-      picker.removeEventListener("click", onPick);
-      resolve(parseInt(btn.dataset.color));
-    }
-    picker.addEventListener("click", onPick);
-  });
+function toast(msg, type = "") {
+  const container = document.getElementById("toast-container");
+  const div = document.createElement("div");
+  div.className = `toast${type ? ` toast-${type}` : ""}`;
+  div.textContent = msg;
+  container.appendChild(div);
+  setTimeout(() => div.remove(), 3500);
 }
 
-function showNotification(text) {
-  const el = document.getElementById("notification");
-  el.textContent = text;
-  el.style.display = "block";
-  setTimeout(() => { el.style.display = "none"; }, 3000);
-}
+// ─── Init ─────────────────────────────────────────────────────────────────────
 
-function updateOpponentCount(player_id, delta) {
-  const data = opponentData.get(player_id);
-  if (!data) return;
-  data.card_count = Math.max(0, data.card_count + delta);
-  renderOpponent(player_id);
-}
-
-function refreshDrawHighlight() {
-  const noPlayable = isMyTurn &&
-    !Array.from(document.querySelectorAll("#player-cards button")).some((b) => !b.disabled);
-  document.getElementById("draw-btn").classList.toggle("draw-highlight", noPlayable);
-  document.getElementById("no-card-hint").hidden = !noPlayable;
-}
-
-function updateDirectionIndicator(direction) {
-  const el = document.getElementById("direction-indicator");
-  el.textContent = direction === 1 ? "Sens : →" : "Sens : ←";
-}
-
-function showGameResult(won, winnerName) {
-  const overlay = document.getElementById("game-result-overlay");
-  const canvas  = document.getElementById("result-canvas");
-  const icon     = document.getElementById("result-icon");
-  const title    = document.getElementById("result-title");
-  const subtitle = document.getElementById("result-subtitle");
-
-  overlay.style.background = won ? "rgba(0,0,0,0.78)" : "rgba(8,0,0,0.92)";
-  icon.textContent     = won ? "🏆" : "💀";
-  title.textContent    = won ? "Victoire !" : "Défaite";
-  title.style.color    = won ? "#FFD700" : "#cc2222";
-  title.style.animation = won ? "title-shine 2s ease-in-out infinite" : "title-flicker 5s 0.8s infinite";
-  subtitle.textContent = won
-    ? "Bravo, tu as remporté la partie !"
-    : `Bien joué à ${winnerName} — meilleure chance la prochaine fois !`;
-
-  overlay.hidden = false;
-
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const stop = won ? startConfetti(canvas) : startAsh(canvas);
-
-  document.getElementById("result-home-btn").addEventListener("click", () => {
-    stop();
-    window.location.href = "/";
-  }, { once: true });
-
-  setTimeout(() => { stop(); window.location.href = "/"; }, 8000);
-}
-
-function startConfetti(canvas) {
-  const ctx = canvas.getContext("2d");
-  const COLORS = ["#F63A3A","#565EF5","#5DF55D","#F5D55D","#FF9500","#FF69B4","#00CFFF","#FFFFFF"];
-
-  const pieces = Array.from({ length: 140 }, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * -canvas.height,
-    w: Math.random() * 14 + 5,
-    h: Math.random() * 7 + 3,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
-    rot: Math.random() * Math.PI * 2,
-    rotV: (Math.random() - 0.5) * 0.18,
-    vx: (Math.random() - 0.5) * 3,
-    vy: Math.random() * 3 + 2,
-    shape: Math.random() > 0.4 ? "rect" : "circle",
-  }));
-
-  const bursts = [];
-  const burstTimer = setInterval(() => {
-    const bx = canvas.width  * 0.1 + Math.random() * canvas.width  * 0.8;
-    const by = canvas.height * 0.1 + Math.random() * canvas.height * 0.45;
-    const bc = COLORS[Math.floor(Math.random() * COLORS.length)];
-    for (let i = 0; i < 30; i++) {
-      const angle = (i / 30) * Math.PI * 2;
-      const spd   = Math.random() * 7 + 3;
-      bursts.push({
-        x: bx, y: by,
-        vx: Math.cos(angle) * spd,
-        vy: Math.sin(angle) * spd,
-        color: bc,
-        size: Math.random() * 5 + 2,
-        life: 1,
-        decay: 0.016 + Math.random() * 0.012,
-      });
-    }
-  }, 1400);
-
-  let frame;
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (const p of pieces) {
-      p.x += p.vx; p.y += p.vy; p.rot += p.rotV;
-      if (p.y > canvas.height + 20) { p.y = -20; p.x = Math.random() * canvas.width; }
-      ctx.save();
-      ctx.globalAlpha = 0.9;
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.fillStyle = p.color;
-      if (p.shape === "circle") {
-        ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2); ctx.fill();
-      } else {
-        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      }
-      ctx.restore();
-    }
-
-    for (let i = bursts.length - 1; i >= 0; i--) {
-      const b = bursts[i];
-      b.x  += b.vx; b.y += b.vy;
-      b.vy += 0.15; b.vx *= 0.97;
-      b.life -= b.decay;
-      if (b.life <= 0) { bursts.splice(i, 1); continue; }
-      ctx.save();
-      ctx.globalAlpha = b.life;
-      ctx.fillStyle = b.color;
-      ctx.beginPath(); ctx.arc(b.x, b.y, b.size * b.life, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-    }
-
-    frame = requestAnimationFrame(draw);
-  }
-  draw();
-
-  return () => { clearInterval(burstTimer); cancelAnimationFrame(frame); };
-}
-
-function startAsh(canvas) {
-  const ctx = canvas.getContext("2d");
-  const COLORS = ["#3a1010","#4a0808","#2a0000","#550000","#1a1a1a","#662200"];
-
-  const embers = Array.from({ length: 90 }, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    w: Math.random() * 3 + 1,
-    h: Math.random() * 22 + 8,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
-    rot: -Math.PI / 6 + (Math.random() - 0.5) * 0.4,
-    vx: -0.6 + (Math.random() - 0.5) * 0.4,
-    vy: Math.random() * 3 + 1.5,
-    opacity: Math.random() * 0.45 + 0.15,
-  }));
-
-  let frame;
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (const p of embers) {
-      p.x += p.vx; p.y += p.vy;
-      if (p.y > canvas.height + 20) { p.y = -20; p.x = Math.random() * canvas.width; }
-      ctx.save();
-      ctx.globalAlpha = p.opacity;
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.restore();
-    }
-    frame = requestAnimationFrame(draw);
-  }
-  draw();
-
-  return () => cancelAnimationFrame(frame);
-}
+document.getElementById("draw-btn").disabled = true;

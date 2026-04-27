@@ -1,200 +1,96 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Uno - Partie</title>
     <link rel="stylesheet" href="/public/css/game/game.css" />
-    <style>
-      .card-playable {
-        outline: 2px solid rgba(255, 255, 255, 0.85);
-        outline-offset: 3px;
-        box-shadow: 0 0 14px rgba(255, 255, 255, 0.3);
-      }
-
-      #color-picker:not([hidden]) {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 24px;
-        background: rgba(0, 0, 0, 0.78);
-        z-index: 100;
-      }
-      #color-picker p {
-        color: white;
-        font-size: 18px;
-        font-weight: 600;
-        letter-spacing: 0.3px;
-      }
-      #color-picker-btns {
-        display: flex;
-        gap: 20px;
-      }
-      #color-picker-btns button {
-        width: 88px;
-        height: 88px;
-        border-radius: 14px;
-        border: 3px solid rgba(255, 255, 255, 0.25);
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 700;
-        color: rgba(0, 0, 0, 0.65);
-        font-family: inherit;
-        transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
-      }
-      #color-picker-btns button:hover {
-        transform: scale(1.12);
-        border-color: white;
-        box-shadow: 0 0 16px rgba(255, 255, 255, 0.35);
-      }
-      .draw-highlight {
-        outline: 2px solid rgba(255, 255, 255, 0.85);
-        outline-offset: 3px;
-        box-shadow: 0 0 14px rgba(255, 255, 255, 0.4);
-      }
-      #no-card-hint {
-        color: rgba(255, 255, 255, 0.85);
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 0.2px;
-        margin: 0;
-      }
-
-      /* ── Écran de résultat ── */
-      #game-result-overlay:not([hidden]) {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 200;
-      }
-      #result-canvas {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-      }
-      #result-content {
-        position: relative;
-        z-index: 1;
-        text-align: center;
-        animation: result-pop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-      }
-      @keyframes result-pop {
-        from { transform: scale(0.3) translateY(40px); opacity: 0; }
-        to   { transform: scale(1)   translateY(0);    opacity: 1; }
-      }
-      #result-icon {
-        font-size: 90px;
-        line-height: 1;
-        margin-bottom: 20px;
-        animation: icon-float 2.2s ease-in-out infinite;
-      }
-      @keyframes icon-float {
-        0%, 100% { transform: translateY(0);    }
-        50%       { transform: translateY(-14px); }
-      }
-      #result-title {
-        font-size: 76px;
-        font-weight: 900;
-        margin: 0 0 16px;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-      }
-      @keyframes title-shine {
-        0%, 100% { text-shadow: 0 0 40px rgba(255,215,0,.9), 0 0 80px rgba(255,215,0,.5); }
-        50%       { text-shadow: 0 0 70px rgba(255,215,0,1),  0 0 140px rgba(255,215,0,.8); }
-      }
-      @keyframes title-flicker {
-        0%, 88%, 90%, 92%, 100% { opacity: 1;   }
-        89%, 91%                { opacity: 0.4; }
-      }
-      #result-subtitle {
-        font-size: 20px;
-        color: rgba(255, 255, 255, 0.75);
-        margin: 0 0 40px;
-        max-width: 500px;
-      }
-      #result-home-btn {
-        background: rgba(255, 255, 255, 0.12);
-        color: white;
-        border: 2px solid rgba(255, 255, 255, 0.35);
-        padding: 14px 44px;
-        border-radius: 12px;
-        font-size: 17px;
-        font-weight: 700;
-        font-family: inherit;
-        cursor: pointer;
-        transition: background 0.2s, border-color 0.2s, transform 0.15s;
-      }
-      #result-home-btn:hover {
-        background: rgba(255, 255, 255, 0.22);
-        border-color: rgba(255, 255, 255, 0.85);
-        transform: scale(1.06);
-      }
-    </style>
   </head>
   <body>
-    <div id="notification"></div>
+
+    <!-- ── Overlay : choix de couleur ───────────────────────────────────── -->
+    <div id="color-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <p class="modal-title">Choisissez une couleur</p>
+        <div class="color-grid">
+          <button class="color-btn" data-color="1" style="background:#e74c3c;" aria-label="Rouge"></button>
+          <button class="color-btn" data-color="2" style="background:#f1c40f;" aria-label="Jaune"></button>
+          <button class="color-btn" data-color="3" style="background:#2ecc71;" aria-label="Vert"></button>
+          <button class="color-btn" data-color="4" style="background:#3498db;" aria-label="Bleu"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Overlay : fin de partie ──────────────────────────────────────── -->
+    <div id="gameover-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <p id="gameover-title" class="modal-title"></p>
+        <p id="gameover-sub" class="modal-sub"></p>
+        <button id="back-lobby-btn" class="btn-primary">Retour au lobby</button>
+      </div>
+    </div>
+
+    <!-- ── Header ───────────────────────────────────────────────────────── -->
     <header>
-      <a href="/"><img src="/public/images/logo.png" alt="Uno" /></a>
-      <div id="game-info">
-        <span id="room-name"></span>
-        <span id="current-player-name"></span>
-        <span id="direction-indicator"></span>
+      <a href="/"><img src="/public/images/logo.png" alt="Uno" class="noselect" draggable="false" /></a>
+      <div id="user-display" class="noselect">
+        <div id="user-info">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="user-icon">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M12 2a5 5 0 1 1 -5 5l.005 -.217a5 5 0 0 1 4.995 -4.783z"/>
+            <path d="M14 14a5 5 0 0 1 5 5v1a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-1a5 5 0 0 1 5 -5h4z"/>
+          </svg>
+          <span id="current-player-name"></span>
+        </div>
+        <div id="turn-badge">En attente…</div>
       </div>
     </header>
+
+    <!-- ── Main ─────────────────────────────────────────────────────────── -->
     <main>
-      <section id="opponents">
+
+      <!-- Adversaires -->
+      <section id="opponents-section">
         <ul id="opponent-list"></ul>
       </section>
-      <section id="board">
-        <div id="draw-pile">
-          <p class="pile-label">Pioche</p>
-          <button id="draw-btn" disabled>
-            <img src="/public/assets/cards/uno_recto.svg" alt="Pioche" />
+
+      <!-- Plateau -->
+      <section id="board-section">
+
+        <!-- Défausse -->
+        <div id="discard-area">
+          <div id="current-card" class="card-slot">
+            <span class="slot-label">Défausse</span>
+          </div>
+          <div id="color-indicator"></div>
+        </div>
+
+        <!-- Pioche -->
+        <div id="draw-area">
+          <button id="draw-btn" class="draw-pile noselect" disabled>
+            <img src="/public/assets/cards/uno_recto.svg" alt="Piocher" draggable="false" />
+            <span>Piocher</span>
           </button>
         </div>
-        <div id="discard-pile">
-          <p class="pile-label">Défausse</p>
-          <div id="current-card"></div>
-        </div>
+
       </section>
-      <section id="hand">
+
+      <!-- Main du joueur -->
+      <section id="hand-section">
         <ul id="player-cards"></ul>
       </section>
-      <section id="controls">
-        <p id="turn-indicator"></p>
-        <p id="no-card-hint" hidden>Aucune carte jouable — piochez !</p>
-        <div id="action-btns">
-          <button id="uno-btn" hidden disabled>UNO !</button>
-          <button id="counter-uno-btn" hidden disabled>Contre UNO</button>
-<button id="leave-btn">Quitter</button>
-        </div>
+
+      <!-- Actions UNO -->
+      <section id="uno-section">
+        <button id="uno-btn" class="btn-uno" disabled>UNO !</button>
+        <button id="counter-uno-btn" class="btn-counter" disabled>Contrer UNO</button>
       </section>
+
     </main>
-    <div id="color-picker" hidden>
-      <p>Choisis une couleur</p>
-      <div id="color-picker-btns">
-        <button data-color="1" style="background:#F63A3A" aria-label="Rouge">Rouge</button>
-        <button data-color="2" style="background:#565EF5" aria-label="Bleu">Bleu</button>
-        <button data-color="3" style="background:#5DF55D" aria-label="Vert">Vert</button>
-        <button data-color="4" style="background:#F5D55D" aria-label="Jaune">Jaune</button>
-      </div>
-    </div>
-    <div id="game-result-overlay" hidden>
-      <canvas id="result-canvas"></canvas>
-      <div id="result-content">
-        <div id="result-icon"></div>
-        <h1 id="result-title"></h1>
-        <p id="result-subtitle"></p>
-        <button id="result-home-btn">Retour à l'accueil</button>
-      </div>
-    </div>
+
+    <!-- Toasts -->
+    <div id="toast-container"></div>
+
     <script src="/public/js/game.js"></script>
   </body>
 </html>

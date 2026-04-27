@@ -46,7 +46,7 @@ function applyFilters() {
     const matchName = room.name.toLowerCase().includes(query);
     const matchCount =
       activePlayerFilter === "all" ||
-      room.player_count === parseInt(activePlayerFilter);
+      room.participants_count === parseInt(activePlayerFilter);
     return matchName && matchCount;
   });
 
@@ -67,7 +67,7 @@ function renderRooms(filtered) {
     const li = document.createElement("li");
     li.innerHTML = `
       <span class="room-name">${room.name}</span>
-      <span class="room-count">${room.player_count}/${room.max_players}</span>
+      <span class="room-count">${room.participants_count}/${room.max_players}</span>
     `;
     li.addEventListener("click", () => joinRoom(room.id, room.name));
     list.appendChild(li);
@@ -127,17 +127,27 @@ document.querySelectorAll(".filter-btn").forEach((btn) => {
 });
 
 async function joinRoom(roomId, roomName) {
-  const room = await fetch(`/api/room?join=${roomId}`, {
+  const response = await fetch(`/api/room?join=${roomId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-  }).then((res) => res.json());
-  localStorage.setItem("uno_room_id", room.id);
-  localStorage.setItem("uno_room_name", room.name);
-  localStorage.setItem("uno_is_host", `${room.isPlayerHost}`);
-  window.location.href = "/room";
+  });
+
+  try {
+    const data = await response.json();
+    if (response.status != 200) return showError(data.message);
+
+    console.log(data);
+
+    localStorage.setItem("uno_room_id", data.id);
+    localStorage.setItem("uno_room_name", data.name);
+    localStorage.setItem("uno_is_host", `${data.isPlayerHost}`);
+    window.location.href = "/room";
+  } catch (e) {
+    return showError("Une erreur serveur est survenue.");
+  }
 }
 
 document
@@ -157,6 +167,7 @@ document
     const data = await res.json();
     if (!res.ok) {
       msg.textContent = data.message;
+      msg.style.color = "#f87171";
       msg.hidden = false;
       return;
     }
@@ -190,7 +201,7 @@ function showMyRoom() {
 
   document.getElementById("my-room-name").textContent = myRoom.name;
   document.getElementById("my-room-count").textContent =
-    `${myRoom.player_count} / ${myRoom.max_players}`;
+    `${myRoom.participants_count} / ${myRoom.max_players}`;
   document.getElementById("my-room-section").hidden = false;
 
   document.getElementById("my-room-btn").addEventListener("click", () => {
@@ -322,3 +333,48 @@ async function generateBackground() {
 }
 
 generateBackground();
+
+const MAX_VISIBLE = 3;
+const OFFSET = 12; // vertical shift per error
+
+function showError(message) {
+  const stack = document.getElementById("error-stack");
+
+  // Create popup
+  const popup = document.createElement("div");
+  popup.className = "error-popup";
+  popup.innerHTML = message;
+
+  // Insert newest at the top
+  stack.prepend(popup);
+
+  // Get all popups (newest first)
+  const popups = [...stack.children];
+
+  // If too many → remove the oldest (bottom)
+  if (popups.length > MAX_VISIBLE) {
+    const oldest = popups[popups.length - 1];
+    oldest.style.animation = "fadeOutErr 0.35s ease-in forwards";
+    setTimeout(() => oldest.remove(), 350);
+  }
+
+  // Recalculate positions + z-index
+  [...stack.children].forEach((el, i) => {
+    el.style.top = i * OFFSET + "px"; // push older ones down
+    el.style.zIndex = (999 - i).toString(); // newest always on top
+  });
+
+  // Auto-remove after 3s
+  setTimeout(() => {
+    popup.style.animation = "fadeOutErr 0.35s ease-in forwards";
+    setTimeout(() => {
+      popup.remove();
+
+      // Reposition remaining popups
+      [...stack.children].forEach((el, i) => {
+        el.style.top = i * OFFSET + "px";
+        el.style.zIndex = (999 - i).toString();
+      });
+    }, 350);
+  }, 3000);
+}

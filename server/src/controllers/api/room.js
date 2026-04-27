@@ -1,14 +1,25 @@
+import { getRoomBots } from "../../structures/game/bot";
 import { Room } from "../../structures/game/room";
 import db from "../../utils/db";
 
 export function createRoom(ownerId, name, maxPlayers = 4) {
-  if (name.trim() == "")
+  if (name.trim() == "" || !name)
     throw new Error(
       JSON.stringify({
         status_code: 400,
         message: "No name provided.",
       }),
     );
+  name = name.trim();
+
+  if (name.length > 20) {
+    throw new Error(
+      JSON.stringify({
+        status_code: 400,
+        message: "Ce nom est trop long.",
+      }),
+    );
+  }
 
   const existing = db
     .prepare("SELECT id FROM rooms WHERE name = ? LIMIT 1")
@@ -43,7 +54,7 @@ export function getRoomById(id) {
   const stmt = db.prepare(`
     SELECT
       rooms.*,
-      COUNT(room_players.id) AS player_count
+      COUNT(room_players.id) AS participants_count
     FROM rooms
     LEFT JOIN room_players
       ON rooms.id = room_players.room_id
@@ -54,8 +65,14 @@ export function getRoomById(id) {
   const row = stmt.get(id);
   if (!row) return null;
 
-  const room = new Room(row.id, row.name, row.owner_id, row.max_players);
-  room.player_count = row.player_count;
+  const room = new Room(
+    row.id,
+    row.name,
+    row.owner_id,
+    row.max_players,
+    row.is_started,
+  );
+  room.participants_count = room.getParticipants().length;
 
   return room;
 }
@@ -63,8 +80,11 @@ export function getRoomById(id) {
 export function getAllRooms() {
   const stmt = db.prepare(`
     SELECT
-      rooms.*,
-      COUNT(room_players.id) AS player_count
+      rooms.id,
+      rooms.owner_id,
+      rooms.name,
+      rooms.max_players,
+      COUNT(room_players.id) AS participants_count
     FROM rooms
     LEFT JOIN room_players
       ON rooms.id = room_players.room_id
@@ -85,4 +105,12 @@ export function isPlayerInARoom(player_id) {
     .get(player_id);
 
   return !!row;
+}
+
+export function playerCurrentRoomId(player_id) {
+  const row = db
+    .query("SELECT room_id FROM room_players WHERE user_id = ? LIMIT 1")
+    .get(player_id);
+
+  return row ? row.room_id : null;
 }

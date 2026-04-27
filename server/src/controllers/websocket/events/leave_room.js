@@ -1,31 +1,27 @@
-import { broadcast } from "../broadcast.js";
 import { getRoomById } from "../../api/room.js";
-import { getGame, deleteGame } from "../gameManager.js";
+import { broadcast, broadcast_except_sender } from "../broadcast.js";
 
-export function onLeaveRoom(_message, socket, wss) {
-  const room_id = socket.room_id;
-  const player_id = socket.user.id;
-  const name = socket.user.username;
+export function onLeaveRoom(message, socket, wss) {
+  const room = getRoomById(socket.room_id);
+  if (!room) return;
 
-  if (!room_id) {
-    socket.send(JSON.stringify({ error: "Pas dans une room" }));
-    return;
-  }
-
-  const room = getRoomById(room_id);
-  if (!room) {
-    socket.send(JSON.stringify({ error: "Room introuvable" }));
-    return;
-  }
-
-  if (!room.getPlayer(player_id)) {
-    socket.send(JSON.stringify({ error: "Pas dans cette room" }));
-    return;
-  }
-
-  if (getGame(room_id)) deleteGame(room_id);
-
-  room.removePlayer(player_id);
+  const hasHostLeaved = room.owner_id === socket.user_id;
+  room.removePlayer(socket.user_id);
   socket.room_id = null;
-  broadcast(wss, room_id, { type: "player_left", room_id, player_id, name });
+
+  broadcast(wss, room.id, {
+    type: "player_left",
+    player_id: socket.user_id,
+  });
+
+  if (hasHostLeaved) {
+    broadcast(wss, room.id, {
+      type: "room_data",
+      name: room.name,
+      owner_id: room.owner_id,
+      max_players: room.max_players,
+      players: room.getPlayers(),
+      bots: room.getBots(),
+    });
+  }
 }

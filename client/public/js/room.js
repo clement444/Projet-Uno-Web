@@ -1,71 +1,150 @@
 const token = localStorage.getItem("uno_token");
-const username = localStorage.getItem("uno_username");
 const roomId = localStorage.getItem("uno_room_id");
-const roomName = localStorage.getItem("uno_room_name");
-const isHost = localStorage.getItem("uno_is_host") === "true";
 
-if (!token || !roomId) window.location.href = "/";
+let user_id;
+let room_max_players;
+let room_host_id;
 
-document.getElementById("current-username").textContent = username;
-document.getElementById("room-name").textContent = roomName || roomId;
+if (!token) window.location.href = "/";
 
+const username = document.getElementById("current-username");
 const startBtn = document.getElementById("start-btn");
+const addBotBtn = document.getElementById("add-bot-btn");
+const hostActions = document.getElementById("host-actions");
 const waitingMsg = document.getElementById("waiting-msg");
 
-if (isHost) {
-  startBtn.hidden = false;
-  waitingMsg.hidden = true;
-  document.getElementById("bot-selector").hidden = false;
-}
+const ws = new WebSocket(`ws://${location.host}`, ["Authorization", token]);
 
-let roomOwnerId = null;
-const ws = new WebSocket(`ws://${location.host}`);
+setInterval(() => {
+  setInterval(() => {
+    if (ws.readyState === ws.CLOSED) window.location.href = "/";
+  }, 5000);
+}, 5000);
 
-ws.addEventListener("open", () => {
-  ws.send(JSON.stringify({ type: "join_room", room_id: parseInt(roomId), token }));
+ws.addEventListener("open", async () => {
+  const me = await fetch(`/api/me`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  }).then((res) => res.json());
+  if (!me) return (window.location.href = "/");
+  user_id = me.id;
+  username.textContent = me.username;
+
+  ws.send(
+    JSON.stringify({
+      type: "join_room",
+      room_id: roomId,
+    }),
+  );
 });
 
 ws.addEventListener("message", (event) => {
   const msg = JSON.parse(event.data);
 
-  if (msg.error) { console.error("[WS error]", msg.error); return; }
+  switch (msg.type) {
+    case "error":
+      handleErrors(msg.code);
+      break;
 
-  if (msg.type === "room_data") {
-    roomOwnerId = msg.owner_id;
-    msg.players.forEach((p) => addPlayer(p.username, p.id, p.id === msg.owner_id));
+    case "room_data":
+      console.log(msg);
+      displayRoomData(
+        msg.name,
+        msg.owner_id,
+        msg.max_players,
+        msg.players,
+        msg.bots,
+      );
+      break;
+
+    case "player_joined":
+      addPlayer(msg.name, msg.player_id, false);
+      break;
+
+    case "player_left":
+    case "player_disconnected":
+      removePlayer(msg.player_id);
+      if (msg.new_owner_id) {
+        room_host_id = msg.new_owner_id;
+        checkHost();
+      }
+      break;
+
+    case "bot_added":
+      addPlayer(msg.bot_name, msg.bot_id, true);
+      break;
+
+    case "bot_removed":
+      removePlayer(msg.bot_id);
+      break;
+
+    case "game_started":
+      window.location.href = "/game";
+      break;
   }
-  if (msg.type === "player_joined") addPlayer(msg.name, msg.player_id, msg.player_id === roomOwnerId);
-  if (msg.type === "player_left") removePlayer(msg.player_id);
-  if (msg.type === "player_disconnected") removePlayer(msg.player_id);
-  if (msg.type === "game_started") window.location.href = "/game";
 
   checkHost();
 });
 
-function addPlayer(name, id, isOwner = false) {
+function addPlayer(name, id, is_bot = false) {
   const list = document.getElementById("players");
   if (document.getElementById(`player-${id}`)) return;
 
   const li = document.createElement("li");
   li.id = `player-${id}`;
 
-  const isCurrentUser = name === username;
-  const isPlayerHost = isOwner;
-  const initial = name.charAt(0).toUpperCase();
+  const isCurrentUser = id === user_id;
+  const initial = is_bot ? "B" : name.charAt(0).toUpperCase();
 
   li.innerHTML = `
     <div class="player-info">
-      <div class="player-avatar">${initial}</div>
+      <div class="player-avatar${is_bot ? " bot-avatar" : ""}">${initial}</div>
       <span class="player-name">${name}</span>
     </div>
     <div class="player-badges">
+      ${is_bot ? '<span class="badge badge-bot">Bot</span>' : ""}
       ${isCurrentUser ? '<span class="badge badge-you">Vous</span>' : ""}
-      ${isPlayerHost ? '<span class="badge badge-host">Hôte</span>' : ""}
+      ${id === room_host_id ? '<span class="badge badge-host">Hôte</span>' : ""}
+      ${is_bot && user_id === room_host_id ? `<button class="remove-bot-btn" data-bot-id="${id}">✕</button>` : ""}
     </div>
   `;
 
+  if (is_bot && user_id === room_host_id) {
+    li.querySelector(".remove-bot-btn").addEventListener("click", () => {
+      ws.send(
+        JSON.stringify({ type: "remove_bot", room_id: roomId, bot_id: id }),
+      );
+    });
+  }
+
   list.appendChild(li);
   updatePlayerCount();
+}
+
+function displayRoomData(room_name, room_owner_id, max_players, players, bots) {
+  room_host_id = room_owner_id;
+  document.getElementById("room-name").textContent = room_name;
+
+  document.getElementById("player-count").textContent =
+    `${players.length} / ${max_players}`;
+
+  const list = document.getElementById("players");
+  list.innerHTML = "";
+
+  players.forEach((player) => {
+    addPlayer(player.username, player.id, false);
+  });
+
+  bots.forEach((bot) => {
+    addPlayer(bot.name, bot.id, true);
+  });
+
+  room_max_players = max_players;
+  updateAddBotButton();
+  checkHost();
 }
 
 function removePlayer(id) {
@@ -77,32 +156,38 @@ function removePlayer(id) {
 function updatePlayerCount() {
   const count = document.getElementById("players").children.length;
   document.getElementById("player-count").textContent = `${count} / 4`;
+  updateAddBotButton();
+}
+
+function updateAddBotButton() {
+  const count = document.getElementById("players").children.length;
+
+  if (count >= room_max_players) {
+    addBotBtn.style.opacity = "0.5";
+    addBotBtn.style.pointerEvents = "none";
+    addBotBtn.style.cursor = "default";
+  } else {
+    addBotBtn.style.opacity = "1";
+    addBotBtn.style.pointerEvents = "auto";
+    addBotBtn.style.cursor = "pointer";
+  }
 }
 
 function checkHost() {
-  if (isHost) {
-    startBtn.hidden = false;
+  if (user_id === room_host_id) {
+    hostActions.hidden = false;
     waitingMsg.hidden = true;
-    document.getElementById("bot-selector").hidden = false;
   } else {
-    startBtn.hidden = true;
+    hostActions.hidden = true;
     waitingMsg.hidden = false;
   }
 }
 
 document.getElementById("leave-btn").addEventListener("click", async () => {
-  await fetch(`/api/room?leave=${roomId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
   ws.send(
     JSON.stringify({
       type: "leave_room",
       room_id: roomId,
-      player_id: username,
     }),
   );
   localStorage.removeItem("uno_room_id");
@@ -111,8 +196,16 @@ document.getElementById("leave-btn").addEventListener("click", async () => {
 });
 
 startBtn.addEventListener("click", () => {
-  const botCount = parseInt(document.getElementById("bot-count").value) || 0;
-  ws.send(JSON.stringify({ type: "start_game", room_id: roomId, player_id: username, bot_count: botCount }));
+  ws.send(
+    JSON.stringify({
+      type: "start_game",
+      room_id: roomId,
+    }),
+  );
+});
+
+addBotBtn.addEventListener("click", () => {
+  ws.send(JSON.stringify({ type: "add_bot", room_id: roomId }));
 });
 
 const standardColors = ["#F63A3A", "#565EF5", "#F5D55D", "#5DF55D"];
@@ -231,3 +324,10 @@ async function generateBackground() {
 }
 
 generateBackground();
+
+function handleErrors(code) {
+  switch (code) {
+    case "room_not_found":
+      return (window.location.href = "/lobby");
+  }
+}

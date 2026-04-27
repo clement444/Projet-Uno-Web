@@ -1,50 +1,29 @@
-import { broadcast, sendToPlayer } from "../broadcast.js";
-import { getRoomById } from "../../api/room.js";
-import { getGame, isBotPlayer } from "../gameManager.js";
-import { playBotTurn } from "../bot.js";
+import { broadcast } from "../broadcast.js";
+import { getGame } from "../../../structures/game/game_state.js";
+import { scheduleBotTurn } from "../../../structures/game/bot.js";
 
-export function onDrawCard(_message, socket, wss) {
-  const room_id = socket.room_id;
-  const player_id = socket.user.id;
-
-  if (!room_id) {
-    socket.send(JSON.stringify({ error: "Pas dans une room" }));
-    return;
-  }
-
-  const room = getRoomById(room_id);
-  if (!room) {
-    socket.send(JSON.stringify({ error: "Room introuvable" }));
-    return;
-  }
+export function onDrawCard(message, socket, wss) {
+  const { room_id } = message;
+  const user_id = socket.user?.id;
 
   const game = getGame(room_id);
-  if (!game) {
-    socket.send(JSON.stringify({ error: "Partie introuvable" }));
-    return;
-  }
+  if (!game) { socket.send(JSON.stringify({ type: "error", error: "game_not_found" })); return; }
 
-  if (game.getCurrentPlayer() !== player_id) {
-    socket.send(JSON.stringify({ error: "Ce n'est pas ton tour" }));
-    return;
-  }
+  const result = game.drawCard(user_id);
+  if (result.error) { socket.send(JSON.stringify({ type: "draw_error", error: result.error })); return; }
 
-  const drawn = game.drawCards(player_id, 1);
-  if (drawn.length === 0) {
-    socket.send(JSON.stringify({ error: "Plus de cartes dans la pioche" }));
-    return;
-  }
+  // Cartes piochées + main complète au joueur
+  socket.send(JSON.stringify({ type: "cards_drawn", cards: result.drawn, forced: result.forced }));
+  socket.send(JSON.stringify({ type: "hand_update", cards: game.handOf(user_id) }));
 
-  sendToPlayer(wss, player_id, {
-    type: "hand_update",
-    hand: game.getHand(player_id),
-    opponents: game.getOpponentState(player_id),
+  // Broadcast état public (tour suivant, compteurs)
+  broadcast(wss, room_id, {
+    type: "player_drew",
+    player_id: user_id,
+    count: result.drawn.length,
+    ...game.publicState(),
   });
-  broadcast(wss, room_id, { type: "card_drawn", player_id });
 
-  game.nextTurn();
-  broadcast(wss, room_id, { type: "turn", player_id: game.getCurrentPlayer() });
-  if (isBotPlayer(room_id, game.getCurrentPlayer())) {
-    setTimeout(() => playBotTurn(game, room_id, wss), 1500);
-  }
+  // Si le prochain joueur est un bot, le faire jouer
+  scheduleBotTurn(game, wss);
 }

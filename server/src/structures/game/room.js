@@ -9,13 +9,15 @@ export class Room {
   id;
   owner_id;
   name;
+  is_started;
   max_players;
 
-  constructor(id, name, owner_id, max_players) {
+  constructor(id, name, owner_id, max_players, is_started) {
     this.id = id;
     this.name = name;
     this.owner_id = owner_id;
     this.max_players = max_players;
+    this.is_started = is_started;
   }
 
   changeOwnership(player_id) {
@@ -25,7 +27,23 @@ export class Room {
     const stmt = db.prepare("UPDATE rooms SET owner_id = ? WHERE id = ?");
     stmt.run(player_id, this.id);
 
+    this.owner_id = player_id;
+
     return getRoomById(this.id);
+  }
+
+  startParty() {
+    const stmt = db.prepare("UPDATE rooms SET is_started = 1 WHERE id = ?");
+    stmt.run(this.id);
+
+    this.is_started = true;
+  }
+
+  stopParty() {
+    const stmt = db.prepare("UPDATE rooms SET is_started = 0 WHERE id = ?");
+    stmt.run(this.id);
+
+    this.is_started = false;
   }
 
   addPlayer(player_id) {
@@ -34,13 +52,14 @@ export class Room {
       .get(this.id, player_id);
     if (exists) return;
 
+    this._checkCapacity();
+
     const isInARoom = isPlayerInARoom(player_id);
     if (isInARoom) return;
 
-    db.prepare("INSERT INTO room_players (room_id, user_id) VALUES (?, ?)").run(
-      this.id,
-      player_id,
-    );
+    db.prepare(
+      "INSERT INTO room_players (room_id, user_id, is_bot) VALUES (?, ?, 0)",
+    ).run(this.id, player_id);
   }
 
   removePlayer(player_id) {
@@ -48,9 +67,94 @@ export class Room {
       "DELETE FROM room_players WHERE room_id = ? AND user_id = ?",
     ).run(this.id, player_id);
 
-    const player_count = this.getPlayers();
-    if (player_count == 0) {
-      deleteRoom(this.id);
+    const players = this.getPlayers();
+    if (players.length === 0) {
+      return this.cleanupBots();
+    }
+
+    if (this.owner_id === player_id) {
+      const players = this.getPlayers();
+      const selectedPlayer =
+        players[Math.floor(Math.random() * players.length)];
+
+      this.changeOwnership(selectedPlayer.id);
+    }
+  }
+
+  addBot() {
+    const bot_id = `bot_${Math.floor(Math.random() * 1000)}`;
+    const exists = db
+      .prepare(
+        "SELECT 1 FROM room_players WHERE room_id = ? AND user_id = ? AND is_bot = 1",
+      )
+      .get(this.id, bot_id);
+
+    if (exists) return;
+
+    this._checkCapacity();
+
+    const bot_names = [
+      "BotBaguette",
+      "Jean-Michel_Robot",
+      "LaBeuhMachine",
+      "RoboChibre",
+      "GigaChadou",
+      "BotDeLaStreet",
+      "RoiDesBots",
+      "Botinator3000",
+      "LeMecDu84",
+      "BotMarrant",
+      "RoboTocard",
+      "BotLeRigolo",
+      "GrosMinetDuTurfu",
+      "BotDeCompét",
+      "LeBotQuiPue",
+      "BotDeLaHess",
+      "RoboRaclette",
+      "BotSansCerveau",
+      "BotDeLaBagarre",
+      "JeanBot",
+      "BotDeLaDaronne",
+      "RoboSauceSamouraï",
+      "BotDeSecours",
+      "BotLeSang",
+      "BotDeLaMoula",
+      "BotFDP (Friendly Digital Player)",
+      "BotTémaLaTaille",
+      "BotPasFou",
+      "BotQuiFaitLeTaf",
+      "BotDeLaZer",
+      "BotTocard",
+      "BotPasNet",
+      "BotDuTurfu",
+      "BotDeLaFlemme",
+      "BotQuiTryhard",
+      "BotMemeLord",
+      "BotChibreur",
+      "BotDeLaNight",
+      "BotPasContent",
+    ];
+
+    const bot_name = bot_names[Math.floor(Math.random() * bot_names.length)];
+
+    db.prepare(
+      "INSERT INTO room_players (room_id, user_id, bot_name, is_bot) VALUES (?, ?, ?, 1)",
+    ).run(this.id, bot_id, bot_name);
+
+    return {
+      id: bot_id,
+      name: bot_name,
+    };
+  }
+
+  removeBot(bot_id) {
+    db.prepare(
+      "DELETE FROM room_players WHERE room_id = ? AND user_id = ? AND is_bot = 1",
+    ).run(this.id, bot_id);
+
+    const players = this.getPlayers();
+    if (players.length === 0) {
+      this.cleanupBots();
     }
   }
 
@@ -66,9 +170,88 @@ export class Room {
 
   getPlayers() {
     const rows = db
-      .prepare("SELECT user_id FROM room_players WHERE room_id = ?")
+      .prepare(
+        `
+        SELECT users.id, users.username, room_players.joined_at
+        FROM room_players
+        JOIN users ON users.id = room_players.user_id
+        WHERE room_players.room_id = ? AND is_bot = 0
+        ORDER BY room_players.joined_at ASC
+      `,
+      )
       .all(this.id);
 
-    return rows.map((r) => r.user_id);
+    return rows.map((r) => ({
+      id: r.id,
+      username: r.username,
+      joined_at: r.joined_at,
+    }));
+  }
+
+  getBots() {
+    const rows = db
+      .prepare(
+        `
+      SELECT user_id, bot_name, joined_at
+      FROM room_players
+      WHERE room_id = ? AND is_bot = 1
+      ORDER BY joined_at ASC
+      `,
+      )
+      .all(this.id);
+
+    return rows.map((r) => ({
+      id: r.user_id,
+      name: r.bot_name,
+      joined_at: r.joined_at,
+    }));
+  }
+
+  getParticipants() {
+    const players = this.getPlayers();
+    const bots = this.getBots();
+
+    const normalizedBots = bots.map((b) => ({
+      id: b.id,
+      username: null,
+      joined_at: b.joined_at,
+      is_bot: true,
+    }));
+
+    const normalizedPlayers = players.map((p) => ({
+      id: p.id,
+      username: p.username,
+      joined_at: p.joined_at,
+      is_bot: false,
+    }));
+
+    return [...normalizedPlayers, ...normalizedBots].sort(
+      (a, b) => new Date(a.joined_at) - new Date(b.joined_at),
+    );
+  }
+
+  cleanupBots() {
+    db.prepare("DELETE FROM room_players WHERE room_id = ? AND is_bot = 1").run(
+      this.id,
+    );
+
+    const players = this.getPlayers();
+    const bots = this.getBots();
+
+    if (players.length === 0 && bots.length === 0) {
+      deleteRoom(this.id);
+    }
+  }
+
+  _checkCapacity() {
+    const count = this.getParticipants().length;
+    if (count >= this.max_players) {
+      throw new Error(
+        JSON.stringify({
+          status_code: 401,
+          message: "Salon plein.",
+        }),
+      );
+    }
   }
 }

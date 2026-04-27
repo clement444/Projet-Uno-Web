@@ -19,6 +19,7 @@ db.run(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     owner_id INTEGER NOT NULL,
     name TEXT NOT NULL UNIQUE,
+    is_started INTEGER NOT NULL CHECK(is_started IN (0, 1)) DEFAULT 0,
     max_players INTEGER NOT NULL CHECK(max_players > 0),
     FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE CASCADE
   )
@@ -29,6 +30,8 @@ db.run(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     room_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
+    bot_name TEXT,
+    is_bot INTEGER NOT NULL CHECK(is_bot IN (0, 1)) DEFAULT 0,
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,

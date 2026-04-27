@@ -460,6 +460,54 @@ form p {
     animation: slideUp 20s linear infinite;
 }
 
+#error-stack {
+    width: 100%;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    height: 0;
+    z-index: 999999;
+    pointer-events: none;
+}
+
+.error-popup {
+    position: absolute;
+    padding: 14px 20px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #fca5a5;
+    font-family: "Inter", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0;
+    animation: fadeInErr 0.35s ease-out forwards;
+}
+
+@keyframes fadeInErr {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes fadeOutErr {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+}
+
 @keyframes slideDown {
     0% {
         transform: translateY(-37.5%);

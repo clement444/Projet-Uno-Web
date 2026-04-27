@@ -1,37 +1,27 @@
-import { broadcast, sendToPlayer } from "../broadcast.js";
-import { getGame } from "../gameManager.js";
+import { broadcast } from "../broadcast.js";
+import { getGame } from "../../../structures/game/game_state.js";
 
 export function onCounterUno(message, socket, wss) {
-  const { target_id } = message;
-  const room_id = socket.room_id;
-
-  if (!room_id) {
-    socket.send(JSON.stringify({ error: "Pas dans une room" }));
-    return;
-  }
-  if (!target_id) {
-    socket.send(JSON.stringify({ error: "target_id manquant" }));
-    return;
-  }
+  const { room_id, target_id } = message;
+  const user_id = socket.user?.id;
 
   const game = getGame(room_id);
-  if (!game) {
-    socket.send(JSON.stringify({ error: "Partie introuvable" }));
-    return;
-  }
+  if (!game) return;
 
-  if (!game.unoPending.has(target_id)) {
-    socket.send(JSON.stringify({ error: "Ce joueur a déjà dit UNO ou n'a pas 1 carte" }));
-    return;
-  }
+  const result = game.counterUno(user_id, target_id);
+  if (result.error) { socket.send(JSON.stringify({ type: "counter_uno_error", error: result.error })); return; }
 
-  game.unoPending.delete(target_id);
-  game.drawCards(target_id, 2);
-
-  sendToPlayer(wss, target_id, {
-    type: "hand_update",
-    hand: game.getHand(target_id),
-    opponents: game.getOpponentState(target_id),
+  // Main mise à jour pour la cible pénalisée
+  wss.clients.forEach((client) => {
+    if (client.readyState === 1 && String(client.room_id) === String(room_id) && String(client.user?.id) === String(target_id)) {
+      client.send(JSON.stringify({ type: "hand_update", cards: game.handOf(target_id) }));
+    }
   });
-  broadcast(wss, room_id, { type: "counter_uno", target_id });
+
+  broadcast(wss, room_id, {
+    type: "uno_claimed",
+    caller_id: user_id,
+    target_id,
+    ...game.publicState(),
+  });
 }
