@@ -50,6 +50,7 @@ ws.addEventListener("message", (event) => {
       break;
 
     case "room_data":
+      console.log(msg);
       displayRoomData(
         msg.name,
         msg.owner_id,

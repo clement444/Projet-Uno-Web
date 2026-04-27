@@ -2,15 +2,14 @@ import { getRoomById } from "../../api/room.js";
 import { broadcast, broadcast_except_sender } from "../broadcast.js";
 
 export function onLeaveRoom(message, socket, wss) {
-  const { room_id } = message;
-  const room = getRoomById(room_id);
+  const room = getRoomById(socket.room_id);
   if (!room) return;
 
   const hasHostLeaved = room.owner_id === socket.user_id;
   room.removePlayer(socket.user_id);
   socket.room_id = null;
 
-  broadcast(wss, room_id, {
+  broadcast(wss, room.id, {
     type: "player_left",
     player_id: socket.user_id,
   });

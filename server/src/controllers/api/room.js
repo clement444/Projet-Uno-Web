@@ -65,7 +65,13 @@ export function getRoomById(id) {
   const row = stmt.get(id);
   if (!row) return null;
 
-  const room = new Room(row.id, row.name, row.owner_id, row.max_players);
+  const room = new Room(
+    row.id,
+    row.name,
+    row.owner_id,
+    row.max_players,
+    row.is_started,
+  );
   room.participants_count = room.getParticipants().length;
 
   return room;

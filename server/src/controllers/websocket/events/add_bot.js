@@ -4,9 +4,7 @@ import db from "../../../utils/db.js";
 import { getRoomById } from "../../api/room.js";
 
 export function onAddBot(message, socket, wss) {
-  const { room_id } = message;
-
-  const room = getRoomById(room_id);
+  const room = getRoomById(socket.room_id);
   if (!room)
     return socket.send(
       JSON.stringify({ type: "error", error: "room_not_found" }),
@@ -23,9 +21,8 @@ export function onAddBot(message, socket, wss) {
   try {
     const bot = room.addBot();
 
-    broadcast(wss, room_id, {
+    broadcast(wss, room.id, {
       type: "bot_added",
-      room_id,
       bot_id: bot.id,
       bot_name: bot.name,
     });

@@ -47,6 +47,8 @@ export async function onJoinRoom(message, socket, wss) {
     }
   }
 
+  console.log(room);
+
   socket.send(
     JSON.stringify({
       type: "room_data",
@@ -55,6 +57,7 @@ export async function onJoinRoom(message, socket, wss) {
       max_players: room.max_players,
       players: room.getPlayers(),
       bots: room.getBots(),
+      is_started: room.is_started,
     }),
   );
 

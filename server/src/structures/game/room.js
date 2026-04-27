@@ -12,11 +12,12 @@ export class Room {
   is_started;
   max_players;
 
-  constructor(id, name, owner_id, max_players) {
+  constructor(id, name, owner_id, max_players, is_started) {
     this.id = id;
     this.name = name;
     this.owner_id = owner_id;
     this.max_players = max_players;
+    this.is_started = is_started;
   }
 
   changeOwnership(player_id) {
