@@ -139,8 +139,6 @@ async function joinRoom(roomId, roomName) {
     const data = await response.json();
     if (response.status != 200) return showError(data.message);
 
-    console.log(data);
-
     localStorage.setItem("uno_room_id", data.id);
     localStorage.setItem("uno_room_name", data.name);
     localStorage.setItem("uno_is_host", `${data.isPlayerHost}`);

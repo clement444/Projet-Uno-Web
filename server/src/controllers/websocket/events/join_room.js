@@ -47,8 +47,6 @@ export async function onJoinRoom(message, socket, wss) {
     }
   }
 
-  console.log(room);
-
   socket.send(
     JSON.stringify({
       type: "room_data",
