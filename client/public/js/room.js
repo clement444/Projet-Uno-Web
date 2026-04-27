@@ -50,14 +50,9 @@ ws.addEventListener("message", (event) => {
       break;
 
     case "room_data":
-      console.log(msg);
-      displayRoomData(
-        msg.name,
-        msg.owner_id,
-        msg.max_players,
-        msg.players,
-        msg.bots,
-      );
+      //if (msg.is_started === 1) return (window.location.href = "/game");
+
+      displayRoomData(msg);
       break;
 
     case "player_joined":
@@ -124,7 +119,16 @@ function addPlayer(name, id, is_bot = false) {
   updatePlayerCount();
 }
 
-function displayRoomData(room_name, room_owner_id, max_players, players, bots) {
+function displayRoomData({
+  room_name,
+  room_owner_id,
+  max_players,
+  is_started,
+  players,
+  bots,
+}) {
+  if (is_started === 1) return (window.location.href = "/game");
+
   room_host_id = room_owner_id;
   document.getElementById("room-name").textContent = room_name;
 
