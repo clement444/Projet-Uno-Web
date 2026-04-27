@@ -50,8 +50,6 @@ ws.addEventListener("message", (event) => {
       break;
 
     case "room_data":
-      //if (msg.is_started === 1) return (window.location.href = "/game");
-
       displayRoomData(msg);
       break;
 
@@ -121,7 +119,7 @@ function addPlayer(name, id, is_bot = false) {
 
 function displayRoomData({
   room_name,
-  room_owner_id,
+  owner_id,
   max_players,
   is_started,
   players,
@@ -129,7 +127,7 @@ function displayRoomData({
 }) {
   if (is_started === 1) return (window.location.href = "/game");
 
-  room_host_id = room_owner_id;
+  room_host_id = owner_id;
   document.getElementById("room-name").textContent = room_name;
 
   document.getElementById("player-count").textContent =
