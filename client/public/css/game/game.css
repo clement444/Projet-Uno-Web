@@ -283,6 +283,7 @@ section {
 
 /* Carte individuelle */
 .hand-card {
+    height: 7em;
     position: relative;
     cursor: pointer;
     border-radius: 10px;
@@ -495,4 +496,18 @@ section {
 @keyframes slideIn {
     from { opacity: 0; transform: translateX(20px); }
     to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Confetti ─────────────────────────────────────────────────────────────── */
+.confetti-piece {
+    position: fixed;
+    top: -12px;
+    z-index: 9999;
+    pointer-events: none;
+    animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+    0%   { transform: translateY(0)     rotate(0deg);   opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
