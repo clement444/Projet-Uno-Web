@@ -487,6 +487,17 @@ async function renderHand() {
     ? String(gameState.current_player_id) === String(myId)
     : false;
 
+  // Précharger tous les SVG en une seule promesse avant de toucher le DOM.
+  // Sans ça, les await dans la boucle cèdent la main et deux appels concurrents
+  // (hand_update + game_started) s'entrelacent → cartes dupliquées.
+  const svgTexts = await Promise.all(
+    myHand.map((card) => {
+      const url = CARD_SVG[card.card_id];
+      return url ? loadSVG(url) : Promise.resolve(null);
+    }),
+  );
+
+  // Reconstruction synchrone — aucun await après ce point, pas d'entrelacement possible.
   list.innerHTML = "";
 
   for (let i = 0; i < myHand.length; i++) {
@@ -498,12 +509,8 @@ async function renderHand() {
     div.className = `hand-card noselect ${playable ? "playable" : "not-playable"}`;
     if (playable) div.title = "Jouer cette carte";
 
-    const url = CARD_SVG[card.card_id];
-    if (url) {
-      const svgText  = await loadSVG(url);
-      const colorHex = card.color ? COLOR_HEX[card.color] : null;
-      div.appendChild(makeSVGEl(svgText, colorHex));
-    }
+    const colorHex = card.color ? COLOR_HEX[card.color] : null;
+    if (svgTexts[i]) div.appendChild(makeSVGEl(svgTexts[i], colorHex));
 
     if (playable) {
       div.addEventListener("click", () => handlePlay(i, card));
