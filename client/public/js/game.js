@@ -682,8 +682,8 @@ function launchConfetti() {
   }
 }
 
-document.getElementById("back-lobby-btn").addEventListener("click", () => {
-  window.location.href = "/lobby";
+document.getElementById("back-room-btn").addEventListener("click", () => {
+  window.location.href = "/room";
 });
 
 // ── Toasts ────────────────────────────────────────────────────────────────────
@@ -750,3 +750,52 @@ function friendlyError(code) {
 document.getElementById("draw-btn").disabled        = true;
 document.getElementById("uno-btn").disabled         = true;
 document.getElementById("counter-uno-btn").disabled = true;
+
+// ── Background animé ──────────────────────────────────────────────────────────
+
+const BG_COLORS  = ["#e74c3c", "#f1c40f", "#2ecc71", "#3498db"];
+const BG_CARD_IDS = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14];
+
+async function generateBackground() {
+  const container = document.getElementById("bg-container");
+  if (!container) return;
+
+  await Promise.all(Object.values(CARD_SVG).map(loadSVG));
+
+  const numColumns  = 12;
+  const cardsPerSet = 10;
+  const numSets     = 6;
+
+  for (let i = 0; i < numColumns; i++) {
+    const col = document.createElement("div");
+    col.className = `column ${i % 2 === 0 ? "down" : "up"}`;
+
+    const track = document.createElement("div");
+    track.className = "card-track";
+    track.style.animationDuration = `${40 + (i % 4) * 8}s`;
+
+    const seq = Array.from({ length: cardsPerSet }, () => ({
+      card_id: BG_CARD_IDS[Math.floor(Math.random() * BG_CARD_IDS.length)],
+      color:   BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)],
+    }));
+
+    for (let s = 0; s < numSets; s++) {
+      const set = document.createElement("div");
+      set.className = "card-set";
+      seq.forEach(({ card_id, color }) => {
+        const svgText = svgCache[CARD_SVG[card_id]];
+        if (!svgText) return;
+        const el = document.createElement("div");
+        el.className = "card";
+        el.appendChild(makeSVGEl(svgText, color));
+        set.appendChild(el);
+      });
+      track.appendChild(set);
+    }
+
+    col.appendChild(track);
+    container.appendChild(col);
+  }
+}
+
+generateBackground();
