@@ -81,6 +81,9 @@ async function loadSVG(url) {
 // Précharge tous les SVG en arrière-plan pour éviter les lags à l'affichage
 Object.values(CARD_SVG).forEach(loadSVG);
 
+const CARD_BACK_SVG = "/public/assets/cards/uno_recto.svg";
+loadSVG(CARD_BACK_SVG);
+
 /**
  * Crée un élément SVG coloré depuis le texte SVG brut.
  * Le premier <rect> de fond est recolorisé avec colorHex si fourni.
@@ -103,6 +106,15 @@ let myHand     = [];    // [{ card_id, color }, …]  — main du joueur connect
 let gameState  = null;  // dernier publicState reçu du serveur
 let pendingUno = {};    // { String(player_id): true } — joueurs ayant dit UNO sans être contrés
 let wildIndex  = null;  // index de la carte wild en attente d'un choix de couleur
+
+// État de l'animation de pioche
+const drawAnim = {
+  active:        false,  // animation en cours
+  landed:        false,  // la carte volante a atteint sa destination
+  flying:        null,   // élément DOM de la carte volante
+  drawnCard:     null,   // première carte reçue via cards_drawn
+  pendingRender: false,  // renderHand() différé pendant l'animation
+};
 
 /**
  * Caches de noms : peuplés via room_data, player_joined, bot_added.
@@ -188,13 +200,25 @@ function handleMessage(msg) {
     case "hand_update":
       // Main complète envoyée uniquement au joueur concerné
       myHand = msg.cards ?? [];
-      renderHand();
+      if (!drawAnim.active) {
+        renderHand();
+      } else {
+        drawAnim.pendingRender = true;
+      }
       updateUnoBtn();
       break;
 
     case "cards_drawn":
-      // Confirmation de pioche propre au joueur (nombre + type)
+      // Confirmation de pioche propre au joueur + déclenchement de la révélation
       onCardsDrawn(msg);
+      if (drawAnim.active) {
+        const firstCard = msg.cards?.[0] ?? null;
+        if (drawAnim.landed) {
+          revealDrawCard(firstCard);
+        } else {
+          drawAnim.drawnCard = firstCard;
+        }
+      }
       break;
 
     case "card_played":
@@ -419,20 +443,38 @@ function renderOpponents(counts) {
   list.innerHTML = "";
 
   Object.entries(counts).forEach(([pid, count]) => {
-    if (String(pid) === String(myId)) return; // ne pas s'afficher soi-même
+    if (String(pid) === String(myId)) return;
 
-    const isActive = pid === current;
-    const bot      = isBot(pid);
-    const name     = getName(pid);
-    const initial  = bot ? "B" : name.charAt(0).toUpperCase();
+    const isActive     = pid === current;
+    const name         = getName(pid);
+    const displayCount = Math.min(count, 6);
 
     const li = document.createElement("li");
     li.className = `opponent-card${isActive ? " active" : ""}`;
-    li.innerHTML = `
-      <div class="opponent-avatar${bot ? " bot-avatar" : ""}">${initial}</div>
+
+    // Fan de dos de cartes
+    const fan = document.createElement("div");
+    fan.className = "opponent-cards-fan";
+    for (let j = 0; j < displayCount; j++) {
+      const back = document.createElement("div");
+      back.className = "opp-back";
+      if (j > 0) back.style.marginLeft = "-18px";
+      const img = document.createElement("img");
+      img.src       = CARD_BACK_SVG;
+      img.draggable = false;
+      back.appendChild(img);
+      fan.appendChild(back);
+    }
+
+    const info = document.createElement("div");
+    info.className = "opponent-info";
+    info.innerHTML = `
       <span class="opponent-name">${name}</span>
-      <span class="opponent-count">${count} carte${count > 1 ? "s" : ""}</span>
+      <span class="opponent-count">${count} carte${count !== 1 ? "s" : ""}</span>
     `;
+
+    li.appendChild(fan);
+    li.appendChild(info);
     list.appendChild(li);
   });
 }
@@ -505,6 +547,9 @@ async function renderHand() {
     const playable = isMyTurn && canPlay(card);
 
     const li  = document.createElement("li");
+    li.style.zIndex = i;   // stacking naturel : droite > gauche
+    if (playable) li.classList.add("playable-li");
+
     const div = document.createElement("div");
     div.className = `hand-card noselect ${playable ? "playable" : "not-playable"}`;
     if (playable) div.title = "Jouer cette carte";
@@ -585,7 +630,96 @@ document.getElementById("draw-btn").addEventListener("click", () => {
     room_id:   parseInt(roomId),
     player_id: myId,
   }));
+  startDrawAnimation();
 });
+
+// ── Animation de pioche ───────────────────────────────────────────────────────
+
+function startDrawAnimation() {
+  const drawBtn     = document.getElementById("draw-btn");
+  const handSection = document.getElementById("hand-section");
+  if (!drawBtn || !handSection) return;
+
+  const btnRect  = drawBtn.getBoundingClientRect();
+  const handRect = handSection.getBoundingClientRect();
+
+  drawAnim.active        = true;
+  drawAnim.landed        = false;
+  drawAnim.drawnCard     = null;
+  drawAnim.pendingRender = false;
+
+  const card = document.createElement("div");
+  card.className = "draw-fly-card";
+  card.innerHTML = `
+    <div class="draw-fly-card__inner">
+      <div class="draw-fly-card__front">
+        <img src="${CARD_BACK_SVG}" alt="" draggable="false" />
+      </div>
+      <div class="draw-fly-card__back"></div>
+    </div>
+  `;
+
+  // Position initiale : centre de la pioche
+  card.style.left = `${btnRect.left + btnRect.width / 2 - 38}px`;
+  card.style.top  = `${btnRect.top}px`;
+  document.body.appendChild(card);
+  drawAnim.flying = card;
+
+  // Déclenche la transition au prochain frame (sinon pas d'animation)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      card.style.left = `${handRect.left + handRect.width / 2 - 38}px`;
+      card.style.top  = `${handRect.top + 16}px`;
+    });
+  });
+
+  // Après l'atterrissage (transition CSS 0.55s)
+  setTimeout(() => {
+    drawAnim.landed = true;
+    if (drawAnim.drawnCard !== null) {
+      revealDrawCard(drawAnim.drawnCard);
+    }
+  }, 620);
+
+  // Sécurité : nettoyage si le serveur ne répond pas
+  setTimeout(() => {
+    if (drawAnim.active) finishDrawAnimation();
+  }, 3500);
+}
+
+function revealDrawCard(cardData) {
+  const el = drawAnim.flying;
+  if (!el) return;
+
+  const backEl = el.querySelector(".draw-fly-card__back");
+  if (backEl && cardData) {
+    const url = CARD_SVG[cardData.card_id];
+    if (url && svgCache[url]) {
+      const colorHex = cardData.color ? COLOR_HEX[cardData.color] : null;
+      backEl.appendChild(makeSVGEl(svgCache[url], colorHex));
+    } else if (url) {
+      const img = document.createElement("img");
+      img.src = url;
+      backEl.appendChild(img);
+    }
+  }
+
+  // Retournement CSS
+  el.classList.add("flipped");
+  setTimeout(() => finishDrawAnimation(), 560);
+}
+
+function finishDrawAnimation() {
+  if (drawAnim.flying) {
+    drawAnim.flying.remove();
+    drawAnim.flying = null;
+  }
+  drawAnim.active = false;
+  if (drawAnim.pendingRender) {
+    drawAnim.pendingRender = false;
+    renderHand();
+  }
+}
 
 // UNO (déclaration propre au joueur — protège sa dernière carte)
 document.getElementById("uno-btn").addEventListener("click", () => {
@@ -682,7 +816,7 @@ function launchConfetti() {
   }
 }
 
-document.getElementById("back-room-btn").addEventListener("click", () => {
+document.getElementById("back-lobby-btn").addEventListener("click", () => {
   window.location.href = "/room";
 });
 
