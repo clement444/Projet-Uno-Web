@@ -1,4 +1,6 @@
 import { broadcast } from "../../controllers/websocket/broadcast.js";
+import { getRoomById } from "../../controllers/api/room.js";
+import { removeGame } from "./game_state.js";
 
 // ── Bots par room ────────────────────────────────────────────────────────────
 // Map<room_id, [{ id, name }]>
@@ -144,6 +146,9 @@ function playBotTurn(game, bot_id, wss) {
 
     if (result.winner) {
       broadcast(wss, room_id, { type: "game_over", winner_id: result.winner });
+      const room = getRoomById(room_id);
+      if (room) room.stopParty();
+      removeGame(room_id);
       return;
     }
   } else {

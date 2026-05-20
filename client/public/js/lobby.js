@@ -210,6 +210,9 @@ function showMyRoom() {
   });
 }
 
+setInterval(() => {
+  loadRooms().then(showMyRoom);
+}, 5000);
 loadRooms().then(showMyRoom);
 
 const standardColors = ["#F63A3A", "#565EF5", "#F5D55D", "#5DF55D"];

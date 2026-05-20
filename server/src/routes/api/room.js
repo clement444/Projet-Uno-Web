@@ -93,8 +93,9 @@ export default () => {
           isPlayerHost: room.owner_id == user.id,
         });
       } catch (e) {
-        const err = JSON.parse(e.message);
-        return res.status(err.status_code).json({ message: err.message });
+        let err = {};
+        try { err = JSON.parse(e.message); } catch { /* pas du JSON */ }
+        return res.status(err.status_code ?? 500).json({ message: err.message ?? "Erreur interne." });
       }
     }
 
